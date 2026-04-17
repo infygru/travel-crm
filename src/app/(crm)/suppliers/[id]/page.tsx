@@ -258,7 +258,7 @@ export default async function SupplierDetailPage({
             </div>
             <div>
               <p className="text-xs text-gray-400">Total Transactions</p>
-              <p className="text-sm font-semibold text-gray-800">{supplier._count.payments}</p>
+              <p className="text-sm font-semibold text-gray-800">{supplier.payments.length}</p>
             </div>
           </div>
         </div>
