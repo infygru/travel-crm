@@ -94,14 +94,16 @@ export function Sidebar() {
       <div className="relative flex items-center justify-between h-16 px-4 border-b border-white/[0.06] flex-shrink-0">
         {!collapsed && (
           <div className="flex items-center min-w-0">
-            <Image
-              src="/Zenotrip-logo.jpg"
-              alt="Zeno Trip"
-              width={130}
-              height={44}
-              className="object-contain brightness-0 invert"
-              priority
-            />
+            <div className="bg-white rounded-xl px-2.5 py-1.5">
+              <Image
+                src="/Zenotrip-logo.jpg"
+                alt="Zeno Trip"
+                width={110}
+                height={37}
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
         )}
         {collapsed && (

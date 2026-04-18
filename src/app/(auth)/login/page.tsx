@@ -62,14 +62,16 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-3">
-            <Image
-              src="/Zenotrip-logo.jpg"
-              alt="Zeno Trip"
-              width={180}
-              height={61}
-              className="object-contain brightness-0 invert drop-shadow-lg"
-              priority
-            />
+            <div className="bg-white rounded-2xl px-6 py-3 shadow-lg shadow-black/20">
+              <Image
+                src="/Zenotrip-logo.jpg"
+                alt="Zeno Trip"
+                width={180}
+                height={61}
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
           <p className="text-slate-400 mt-1 text-sm">Travel Agency Management Suite</p>
         </div>

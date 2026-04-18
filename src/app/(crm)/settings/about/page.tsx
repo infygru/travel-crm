@@ -46,14 +46,16 @@ export default function AboutPage() {
           style={{ background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%)" }}
         />
         <div className="relative flex flex-col items-center text-center gap-5">
-          <Image
-            src="/Zenotrip-logo.jpg"
-            alt="Zeno Trip"
-            width={200}
-            height={68}
-            className="object-contain brightness-0 invert"
-            priority
-          />
+          <div className="bg-white rounded-2xl px-6 py-3">
+            <Image
+              src="/Zenotrip-logo.jpg"
+              alt="Zeno Trip"
+              width={200}
+              height={68}
+              className="object-contain"
+              priority
+            />
+          </div>
           <p className="text-white/80 text-base max-w-xl leading-relaxed">
             Zeno Trip is a full-stack travel agency CRM built for modern tour operators and travel agencies.
             Manage your entire business — from the first inquiry to the post-trip invoice — in one place.
