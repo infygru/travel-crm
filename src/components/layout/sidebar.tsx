@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { Globe, ChevronLeft, ChevronRight, LogOut, Circle } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import Image from "next/image";
 import { NAV_GROUPS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -92,25 +93,23 @@ export function Sidebar() {
       {/* Logo */}
       <div className="relative flex items-center justify-between h-16 px-4 border-b border-white/[0.06] flex-shrink-0">
         {!collapsed && (
-          <div className="flex items-center gap-3 min-w-0">
-            <div
-              className="flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)" }}
-            >
-              <Globe className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-white font-bold text-[13px] leading-tight tracking-tight">TravelCRM</p>
-              <p className="text-indigo-300/70 text-[10px] font-medium leading-tight tracking-wide">Agency Suite</p>
-            </div>
+          <div className="flex items-center min-w-0">
+            <Image
+              src="/Zenotrip-logo.jpg"
+              alt="Zeno Trip"
+              width={130}
+              height={44}
+              className="object-contain brightness-0 invert"
+              priority
+            />
           </div>
         )}
         {collapsed && (
           <div
-            className="flex items-center justify-center w-9 h-9 rounded-xl mx-auto"
+            className="flex items-center justify-center w-9 h-9 rounded-xl mx-auto text-white font-black text-lg"
             style={{ background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)" }}
           >
-            <Globe style={{ width: 18, height: 18, color: "white" }} />
+            Z
           </div>
         )}
         {!collapsed && (

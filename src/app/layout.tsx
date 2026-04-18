@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Travel CRM - Enterprise Travel Management",
-  description: "Enterprise-grade CRM for travel agencies and tour operators",
+  title: "Zeno Trip - Travel Agency CRM",
+  description: "End-to-end CRM for travel agencies — bookings, itineraries, quotes and more.",
 };
 
 export default function RootLayout({

@@ -95,7 +95,7 @@ function fmt(d: Date | string | null | undefined) {
 }
 
 export function BookingInvoicePDFDocument({ data }: { data: BookingInvoicePDFData }) {
-  const companyName = data.companyName ?? "Travel CRM";
+  const companyName = data.companyName ?? "Zeno Trip";
   const shortRef = data.bookingRef.slice(0, 8).toUpperCase();
   const invoiceRef = `${data.invoicePrefix ?? "INV"}-${shortRef}`;
   const balance = data.totalAmount - data.paidAmount;

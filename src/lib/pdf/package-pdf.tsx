@@ -79,7 +79,7 @@ export type PackagePDFData = {
   }>;
 };
 
-const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Travel CRM";
+const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Zeno Trip";
 
 export function PackagePDFDocument({ data }: { data: PackagePDFData }) {
   const categoryLabel = data.category.replace(/_/g, " ");

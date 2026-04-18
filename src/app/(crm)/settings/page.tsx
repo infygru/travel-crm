@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import Link from "next/link";
-import { User, Users, TrendingUp, Shield, Building2 } from "lucide-react";
+import { User, Users, TrendingUp, Shield, Building2, Info } from "lucide-react";
 import { ProfileForm, ChangePasswordForm, InviteMemberDialog } from "@/components/settings/profile-form";
 import { CompanySettingsForm } from "@/components/settings/company-settings-form";
 import { PipelineEditor } from "@/components/settings/pipeline-editor";
@@ -34,6 +34,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
     { id: "profile", label: "My Profile", icon: User },
     { id: "team", label: "Team", icon: Users },
     { id: "pipeline", label: "Pipeline", icon: TrendingUp },
+    { id: "about", label: "About", icon: Info, href: "/settings/about" },
   ];
 
   return (
@@ -49,14 +50,16 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           <nav className="space-y-1">
             {tabs.map((t) => {
               const Icon = t.icon;
+              const href = t.href ?? `/settings?tab=${t.id}`;
+              const isActive = t.href ? false : tab === t.id;
               return (
                 <Link
                   key={t.id}
-                  href={`/settings?tab=${t.id}`}
+                  href={href}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    tab === t.id
-                      ? "bg-indigo-50 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-100"
+                    isActive
+                      ? "bg-violet-50 text-violet-700"
+                      : "text-gray-600 hover:bg-violet-50/50"
                   }`}
                 >
                   <Icon className="w-4 h-4" />

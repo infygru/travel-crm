@@ -131,7 +131,7 @@ export default async function PublicItineraryPage({ params }: PublicItineraryPag
                   <Globe className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-white/60 text-xs font-medium uppercase tracking-[0.2em]">Travel CRM</p>
+                  <p className="text-white/60 text-xs font-medium uppercase tracking-[0.2em]">Zeno Trip</p>
                   <p className="text-white font-bold text-sm">Your Premium Travel Partner</p>
                 </div>
               </div>
@@ -480,7 +480,7 @@ export default async function PublicItineraryPage({ params }: PublicItineraryPag
           <div className="text-center py-6 border-t border-gray-200">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Globe className="w-4 h-4 text-indigo-400" />
-              <span className="text-sm font-semibold text-gray-600">Travel CRM</span>
+              <span className="text-sm font-semibold text-gray-600">Zeno Trip</span>
             </div>
             <p className="text-xs text-gray-400">This itinerary was prepared exclusively for you · All prices include applicable taxes</p>
           </div>

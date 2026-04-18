@@ -265,7 +265,7 @@ export async function sendCampaign(campaignId: string): Promise<{ sent: number; 
   if (!campaign.body) throw new Error("Campaign has no message body");
 
   const companySettings = await db.companySettings.findUnique({ where: { id: "singleton" } });
-  const companyName = companySettings?.companyName ?? "Travel CRM";
+  const companyName = companySettings?.companyName ?? "Zeno Trip";
 
   // Mark as SENDING
   await db.campaign.update({ where: { id: campaignId }, data: { status: "SENDING" } });

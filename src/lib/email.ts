@@ -18,13 +18,13 @@ const FROM_ADDRESS = APP_DOMAIN === "resend.dev"
 async function getCompanyName(): Promise<string> {
   try {
     const s = await db.companySettings.findUnique({ where: { id: "singleton" } });
-    return s?.companyName ?? process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Travel CRM";
+    return s?.companyName ?? process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Zeno Trip";
   } catch {
-    return process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Travel CRM";
+    return process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Zeno Trip";
   }
 }
 
-function baseLayout(content: string, previewText: string, companyName = "Travel CRM"): string {
+function baseLayout(content: string, previewText: string, companyName = "Zeno Trip"): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>

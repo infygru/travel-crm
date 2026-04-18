@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
-import { Globe } from "lucide-react"
 import { getPortalSession } from "@/lib/portal-auth"
 import Link from "next/link"
+import Image from "next/image"
 
 interface PortalLayoutProps {
   children: ReactNode
@@ -16,14 +16,16 @@ export default async function PortalLayout({ children }: PortalLayoutProps) {
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href={contact ? "/portal/dashboard" : "/portal/login"} className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-200">
-              <Globe className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="font-bold text-gray-900 text-sm leading-none">Travel CRM</p>
-              <p className="text-gray-400 text-xs">Customer Portal</p>
-            </div>
+          <Link href={contact ? "/portal/dashboard" : "/portal/login"} className="flex items-center gap-3">
+            <Image
+              src="/Zenotrip-logo.jpg"
+              alt="Zeno Trip"
+              width={110}
+              height={37}
+              className="object-contain"
+              priority
+            />
+            <span className="text-xs text-gray-400 border-l border-gray-200 pl-3">Customer Portal</span>
           </Link>
 
           {/* Nav links (when logged in) */}
@@ -86,7 +88,7 @@ export default async function PortalLayout({ children }: PortalLayoutProps) {
       <footer className="border-t border-gray-200 bg-white mt-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 text-center">
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} Travel CRM · Customer Portal · All rights reserved
+            © {new Date().getFullYear()} Zeno Trip · Customer Portal · All rights reserved
           </p>
         </div>
       </footer>

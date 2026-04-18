@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Globe, Lock, Mail } from "lucide-react";
+import { Loader2, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -60,11 +61,17 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4 shadow-lg shadow-indigo-500/50">
-            <Globe className="w-8 h-8 text-white" />
+          <div className="flex justify-center mb-3">
+            <Image
+              src="/Zenotrip-logo.jpg"
+              alt="Zeno Trip"
+              width={180}
+              height={61}
+              className="object-contain brightness-0 invert drop-shadow-lg"
+              priority
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white">Travel CRM</h1>
-          <p className="text-slate-400 mt-1">Enterprise Travel Management</p>
+          <p className="text-slate-400 mt-1 text-sm">Travel Agency Management Suite</p>
         </div>
 
         {/* Card */}
@@ -151,7 +158,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          &copy; {new Date().getFullYear()} Travel CRM. All rights reserved.
+          &copy; {new Date().getFullYear()} Zeno Trip. All rights reserved.
         </p>
       </div>
     </div>

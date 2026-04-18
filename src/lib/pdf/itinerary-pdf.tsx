@@ -116,7 +116,7 @@ export type ItineraryPDFData = {
   }>;
 };
 
-const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Travel CRM";
+const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Zeno Trip";
 
 export function ItineraryPDFDocument({ data }: { data: ItineraryPDFData }) {
   const totalDays = data.days.length;
