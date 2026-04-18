@@ -15,6 +15,7 @@ import {
   ScrollText,
   Building2,
   Plane,
+  Info,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -55,6 +56,7 @@ export const NAV_GROUPS = [
       { title: "Support", href: "/tickets", icon: Headphones },
       { title: "Reports", href: "/reports", icon: BarChart3 },
       { title: "Settings", href: "/settings", icon: Settings2 },
+      { title: "About", href: "/settings/about", icon: Info },
     ],
   },
 ];
