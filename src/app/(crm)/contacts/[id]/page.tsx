@@ -1,4 +1,6 @@
 import { getContactById, getAgents } from "@/lib/actions/contacts";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { getSequences, getContactEnrollments } from "@/lib/actions/marketing";
 import { getQuotes } from "@/lib/actions/quotes";
 import { notFound } from "next/navigation";
@@ -38,12 +40,13 @@ export default async function ContactDetailPage({ params, searchParams }: Contac
   const { id } = await params;
   const { tab = "overview" } = await searchParams;
 
-  const [contact, agents, sequences, enrollments, quotesResult] = await Promise.all([
+  const [contact, agents, sequences, enrollments, quotesResult, settings] = await Promise.all([
     getContactById(id),
     getAgents(),
     getSequences(),
     getContactEnrollments(id),
     getQuotes({ contactId: id }),
+    getCompanySettings(),
   ]);
   if (!contact) notFound();
 
@@ -178,7 +181,7 @@ export default async function ContactDetailPage({ params, searchParams }: Contac
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Total Spent", value: `₹${contact.totalSpent.toLocaleString("en-IN")}` },
+          { label: "Total Spent", value: formatCurrency(contact.totalSpent, settings.currency) },
           { label: "Loyalty Points", value: contact.loyaltyPoints.toLocaleString() },
           { label: "Bookings", value: contact.bookings.length.toString() },
         ].map((stat) => (
@@ -291,7 +294,7 @@ export default async function ContactDetailPage({ params, searchParams }: Contac
                       <p className="text-xs text-gray-400 mt-0.5">{deal.stage?.name}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm font-bold text-gray-900">₹{deal.value.toLocaleString("en-IN")}</span>
+                      <span className="text-sm font-bold text-gray-900">{formatCurrency(deal.value, settings.currency)}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${deal.status === "WON" ? "bg-green-100 text-green-700" : deal.status === "LOST" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>
                         {deal.status}
                       </span>
@@ -328,7 +331,7 @@ export default async function ContactDetailPage({ params, searchParams }: Contac
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-bold text-gray-900">
-                        ₹{q.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                        {formatCurrency(q.totalAmount, settings.currency, { maximumFractionDigits: 0 })}
                       </span>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                         q.status === "ACCEPTED" ? "bg-green-100 text-green-700"
@@ -364,7 +367,7 @@ export default async function ContactDetailPage({ params, searchParams }: Contac
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-gray-900">₹{booking.totalAmount.toLocaleString("en-IN")}</span>
+                      <span className="text-sm font-bold text-gray-900">{formatCurrency(booking.totalAmount, settings.currency)}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${BOOKING_STATUS_COLORS[booking.status]}`}>
                         {booking.status}
                       </span>

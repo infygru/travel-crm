@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { updatePassengerCost } from "@/lib/actions/bookings";
 import { toast } from "sonner";
 import { Check, X, Pencil } from "lucide-react";
+import { useFmt } from "@/components/currency-provider";
 
 type Passenger = {
   id: string;
@@ -24,6 +25,7 @@ export function PassengerCostBreakdown({
   totalAmount: number;
 }) {
   const router = useRouter();
+  const fmt = useFmt();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
@@ -53,10 +55,10 @@ export function PassengerCostBreakdown({
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold text-gray-700">Cost per Passenger</h4>
         <div className="flex items-center gap-4 text-xs text-gray-500">
-          <span>Total: <strong className="text-gray-900">₹{totalAmount.toLocaleString("en-IN")}</strong></span>
-          <span>Allocated: <strong className="text-indigo-600">₹{passengerTotal.toLocaleString("en-IN")}</strong></span>
+          <span>Total: <strong className="text-gray-900">{fmt(totalAmount)}</strong></span>
+          <span>Allocated: <strong className="text-indigo-600">{fmt(passengerTotal)}</strong></span>
           <span className={unallocated !== 0 ? "text-amber-500 font-medium" : "text-green-600 font-medium"}>
-            {unallocated > 0 ? `Unallocated: ₹${unallocated.toLocaleString("en-IN")}` : unallocated < 0 ? `Over by: ₹${Math.abs(unallocated).toLocaleString("en-IN")}` : "Fully allocated"}
+            {unallocated > 0 ? `Unallocated: ${fmt(unallocated)}` : unallocated < 0 ? `Over by: ${fmt(Math.abs(unallocated))}` : "Fully allocated"}
           </span>
         </div>
       </div>
@@ -96,7 +98,7 @@ export function PassengerCostBreakdown({
               ) : (
                 <>
                   <span className={`text-sm font-semibold ${p.individualCost > 0 ? "text-gray-900" : "text-gray-300"}`}>
-                    {p.individualCost > 0 ? `₹${p.individualCost.toLocaleString("en-IN")}` : "—"}
+                    {p.individualCost > 0 ? fmt(p.individualCost) : "—"}
                   </span>
                   <button
                     onClick={() => { setEditingId(p.id); setEditValue(String(p.individualCost || "")); }}

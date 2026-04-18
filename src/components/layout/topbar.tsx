@@ -69,7 +69,7 @@ export function Topbar() {
               <div className="divide-y divide-violet-50/80">
                 {[
                   { title: "New booking confirmed", desc: "Booking #TRV-001 has been confirmed", time: "2m ago", dot: "bg-emerald-500" },
-                  { title: "Payment received", desc: "₹2,500 received for booking TRV-002", time: "1h ago", dot: "bg-blue-500" },
+                  { title: "Payment received", desc: "$2,500 received for booking TRV-002", time: "1h ago", dot: "bg-blue-500" },
                   { title: "Task due today", desc: "Follow up with John Smith", time: "3h ago", dot: "bg-amber-500" },
                 ].map((n, i) => (
                   <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-violet-50/50 cursor-pointer transition-colors">

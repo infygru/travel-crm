@@ -13,6 +13,7 @@ import {
 } from "@/lib/actions/itineraries";
 import { createDesignViaCanva } from "@/lib/actions/canva";
 import { toast } from "sonner";
+import { useFmt } from "@/components/currency-provider";
 import {
   Plus, Trash2, Share2, Plane, Hotel, Zap, Car, Utensils, Sunrise, Tag,
   Palette, ExternalLink, Pencil, Check, X, Printer, Mail, Package,
@@ -97,6 +98,7 @@ const inputCls = "w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm
 
 export function ItineraryBuilder({ itinerary, contactEmail, contactName }: ItineraryBuilderProps) {
   const router = useRouter();
+  const fmt = useFmt();
   const [addingDay, setAddingDay] = useState(false);
   const [addingItemFor, setAddingItemFor] = useState<string | null>(null);
   const [itemForm, setItemForm] = useState(EMPTY_ITEM_FORM);
@@ -499,10 +501,10 @@ export function ItineraryBuilder({ itinerary, contactEmail, contactName }: Itine
                       {item.totalCost > 0 && (
                         <div className="text-right">
                           <span className="text-sm font-semibold text-gray-700">
-                            ₹{item.totalCost.toLocaleString("en-IN")}
+                            {fmt(item.totalCost)}
                           </span>
                           {item.quantity > 1 && (
-                            <p className="text-xs text-gray-400">{item.quantity} × ₹{item.unitCost.toLocaleString("en-IN")}</p>
+                            <p className="text-xs text-gray-400">{item.quantity} × {fmt(item.unitCost)}</p>
                           )}
                         </div>
                       )}
@@ -639,7 +641,7 @@ export function ItineraryBuilder({ itinerary, contactEmail, contactName }: Itine
                     <span className="text-xs text-gray-600 font-medium">Included in package price</span>
                   </label>
                   <span className="text-xs text-gray-500 font-semibold">
-                    Total: ₹{(itemForm.unitCost * itemForm.quantity).toLocaleString("en-IN")}
+                    Total: {fmt(itemForm.unitCost * itemForm.quantity)}
                   </span>
                 </div>
 
@@ -691,7 +693,7 @@ export function ItineraryBuilder({ itinerary, contactEmail, contactName }: Itine
             <p className="text-white text-xs mt-0.5 opacity-80">Included items only</p>
           </div>
           <p className="text-white text-2xl font-bold">
-            ₹{itinerary.totalCost.toLocaleString("en-IN")}
+            {fmt(itinerary.totalCost)}
           </p>
         </div>
       )}

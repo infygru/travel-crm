@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useFmt } from "@/components/currency-provider";
 
 interface RevenueData {
   month: string;
@@ -18,6 +19,7 @@ interface RevenueData {
 }
 
 export function BarRevenueChart({ data }: { data: RevenueData[] }) {
+  const fmt = useFmt();
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
@@ -41,7 +43,7 @@ export function BarRevenueChart({ data }: { data: RevenueData[] }) {
             borderRadius: "8px",
             fontSize: "13px",
           }}
-          formatter={(value: unknown) => [`₹${Number(value).toLocaleString("en-IN")}`, "Revenue"]}
+          formatter={(value: unknown) => [fmt(Number(value)), "Revenue"]}
         />
         <Bar
           dataKey="revenue"

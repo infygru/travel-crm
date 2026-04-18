@@ -11,6 +11,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
+import { useFmt } from "@/components/currency-provider";
 
 interface RevenueData {
   month: string;
@@ -20,6 +21,7 @@ interface RevenueData {
 }
 
 export function RevenueChart({ data }: { data: RevenueData[] }) {
+  const fmt = useFmt();
   const formattedData = data.map((d) => ({
     ...d,
     label: d.month,
@@ -54,7 +56,7 @@ export function RevenueChart({ data }: { data: RevenueData[] }) {
             borderRadius: "8px",
             fontSize: "13px",
           }}
-          formatter={(value: unknown) => [`₹${Number(value).toLocaleString("en-IN")}`, "Revenue"]}
+          formatter={(value: unknown) => [fmt(Number(value)), "Revenue"]}
         />
         <Area
           type="monotone"

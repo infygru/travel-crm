@@ -1,4 +1,6 @@
 import { getDealById, getPipelines } from "@/lib/actions/deals";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { getSequences } from "@/lib/actions/marketing";
 import { getQuotes } from "@/lib/actions/quotes";
 import { notFound } from "next/navigation";
@@ -28,11 +30,12 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
   const { id } = await params;
   const { tab = "overview" } = await searchParams;
 
-  const [deal, pipelines, sequences, quotesResult] = await Promise.all([
+  const [deal, pipelines, sequences, quotesResult, settings] = await Promise.all([
     getDealById(id),
     getPipelines(),
     getSequences(),
     getQuotes({ dealId: id }),
+    getCompanySettings(),
   ]);
   if (!deal) notFound();
 
@@ -139,7 +142,7 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
             )}
           </div>
           <div className="text-right flex-shrink-0 ml-4">
-            <p className="text-3xl font-bold text-indigo-600">₹{deal.value.toLocaleString("en-IN")}</p>
+            <p className="text-3xl font-bold text-indigo-600">{formatCurrency(deal.value, settings.currency)}</p>
             <p className="text-sm text-gray-500 mt-0.5">{deal.probability}% probability</p>
           </div>
         </div>
@@ -363,7 +366,7 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
                 <h3 className="text-sm font-semibold text-gray-900">Deal Details</h3>
                 <div className="space-y-3">
                   {[
-                    { label: "Value", value: `₹${deal.value.toLocaleString("en-IN")}` },
+                    { label: "Value", value: formatCurrency(deal.value, settings.currency) },
                     { label: "Probability", value: `${deal.probability}%` },
                     { label: "Priority", value: deal.priority },
                     { label: "Status", value: deal.status },
@@ -390,7 +393,7 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
                       <Package className="w-5 h-5 text-indigo-600" />
                       <div>
                         <p className="text-sm font-medium text-gray-900">{deal.package.name}</p>
-                        <p className="text-xs text-gray-500">₹{deal.package.basePrice.toLocaleString("en-IN")} base price</p>
+                        <p className="text-xs text-gray-500">{formatCurrency(deal.package.basePrice, settings.currency)} base price</p>
                       </div>
                     </Link>
                   </div>
@@ -464,7 +467,7 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-semibold text-gray-900">
-                          ₹{q.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                          {formatCurrency(q.totalAmount, settings.currency, { maximumFractionDigits: 0 })}
                         </span>
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                           q.status === "ACCEPTED" ? "bg-green-100 text-green-700"
@@ -588,7 +591,7 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${BOOKING_STATUS_COLORS[booking.status]}`}>{booking.status}</span>
-                      <p className="text-sm font-bold text-gray-900">₹{booking.totalAmount.toLocaleString("en-IN")}</p>
+                      <p className="text-sm font-bold text-gray-900">{formatCurrency(booking.totalAmount, settings.currency)}</p>
                       <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-400" />
                     </div>
                   </Link>

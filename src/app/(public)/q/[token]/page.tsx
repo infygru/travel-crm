@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { CheckCircle2, XCircle, Clock, FileText } from "lucide-react";
 import { QuoteClientActions } from "./quote-client-actions";
+import { formatCurrency } from "@/lib/currency";
+import { getCompanySettings } from "@/lib/actions/settings";
 
 const TYPE_COLORS: Record<string, string> = {
   FLIGHT: "bg-sky-100 text-sky-700",
@@ -21,7 +23,7 @@ export default async function PublicQuotePage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const quote = await getQuoteByShareToken(token);
+  const [quote, settings] = await Promise.all([getQuoteByShareToken(token), getCompanySettings()]);
   if (!quote) notFound();
 
   const isExpired =
@@ -98,14 +100,14 @@ export default async function PublicQuotePage({
                   <p className="text-sm font-medium text-gray-800">{item.description}</p>
                   {item.notes && <p className="text-xs text-gray-400 mt-0.5">{item.notes}</p>}
                   <p className="text-xs text-gray-400">
-                    {item.quantity} × ₹{item.unitPrice.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    {item.quantity} × {formatCurrency(item.unitPrice, settings.currency, { maximumFractionDigits: 0 })}
                     {item.discount > 0 && ` (${item.discount}% off)`}
                   </p>
                 </div>
               </div>
               <div className="text-right flex-shrink-0 ml-4">
                 <p className="text-sm font-bold text-gray-900">
-                  ₹{item.totalPrice.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                  {formatCurrency(item.totalPrice, settings.currency, { maximumFractionDigits: 0 })}
                 </p>
               </div>
             </div>
@@ -115,23 +117,23 @@ export default async function PublicQuotePage({
           <div className="px-5 py-4 bg-gray-50 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Subtotal</span>
-              <span className="font-medium">₹{quote.subtotal.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+              <span className="font-medium">{formatCurrency(quote.subtotal, settings.currency, { maximumFractionDigits: 0 })}</span>
             </div>
             {quote.discount > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Discount</span>
-                <span className="font-medium text-green-600">−₹{quote.discount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+                <span className="font-medium text-green-600">−{formatCurrency(quote.discount, settings.currency, { maximumFractionDigits: 0 })}</span>
               </div>
             )}
             {quote.taxes > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Taxes & Fees</span>
-                <span className="font-medium">+₹{quote.taxes.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+                <span className="font-medium">+{formatCurrency(quote.taxes, settings.currency, { maximumFractionDigits: 0 })}</span>
               </div>
             )}
             <div className="flex justify-between text-base font-bold border-t border-gray-200 pt-2 mt-2">
               <span>Total ({quote.currency})</span>
-              <span className="text-indigo-600">₹{quote.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+              <span className="text-indigo-600">{formatCurrency(quote.totalAmount, settings.currency, { maximumFractionDigits: 0 })}</span>
             </div>
           </div>
         </div>

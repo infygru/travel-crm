@@ -1,4 +1,6 @@
 import { getBookingById } from "@/lib/actions/bookings";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -35,7 +37,10 @@ export default async function BookingDetailPage({ params, searchParams }: Bookin
   const { id } = await params;
   const { tab = "overview" } = await searchParams;
 
-  const booking = await getBookingById(id);
+  const [booking, settings] = await Promise.all([
+    getBookingById(id),
+    getCompanySettings(),
+  ]);
   if (!booking) notFound();
 
   const tabs = [
@@ -79,8 +84,8 @@ export default async function BookingDetailPage({ params, searchParams }: Bookin
             </p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-gray-900">₹{booking.totalAmount.toLocaleString("en-IN")}</p>
-            <p className="text-sm text-gray-500">INR</p>
+            <p className="text-2xl font-bold text-gray-900">{formatCurrency(booking.totalAmount, settings.currency)}</p>
+            <p className="text-sm text-gray-500">{settings.currency}</p>
           </div>
         </div>
 
@@ -179,19 +184,19 @@ export default async function BookingDetailPage({ params, searchParams }: Bookin
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
           <p className="text-xs text-gray-500">Selling Price</p>
-          <p className="text-xl font-bold text-gray-900 mt-1">₹{booking.totalAmount.toLocaleString("en-IN")}</p>
+          <p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(booking.totalAmount, settings.currency)}</p>
         </div>
         <div className="bg-white rounded-xl border border-green-200 p-4 shadow-sm">
           <p className="text-xs text-gray-500">Amount Paid</p>
-          <p className="text-xl font-bold text-green-600 mt-1">₹{booking.paidAmount.toLocaleString("en-IN")}</p>
-          {balanceDue > 0 && <p className="text-xs text-red-500 mt-0.5">Balance: ₹{balanceDue.toLocaleString("en-IN")}</p>}
+          <p className="text-xl font-bold text-green-600 mt-1">{formatCurrency(booking.paidAmount, settings.currency)}</p>
+          {balanceDue > 0 && <p className="text-xs text-red-500 mt-0.5">Balance: {formatCurrency(balanceDue, settings.currency)}</p>}
         </div>
         <div className={`bg-white rounded-xl border p-4 shadow-sm ${profit > 0 ? "border-emerald-200" : costPrice > 0 ? "border-red-200" : "border-gray-200"}`}>
           <p className="text-xs text-gray-500">Gross Profit</p>
           <p className={`text-xl font-bold mt-1 ${profit > 0 ? "text-emerald-600" : costPrice > 0 ? "text-red-600" : "text-gray-400"}`}>
-            {costPrice > 0 ? `₹${profit.toLocaleString("en-IN")}` : "—"}
+            {costPrice > 0 ? formatCurrency(profit, settings.currency) : "—"}
           </p>
-          {costPrice > 0 && <p className="text-xs text-gray-400 mt-0.5">Cost: ₹{costPrice.toLocaleString("en-IN")}</p>}
+          {costPrice > 0 && <p className="text-xs text-gray-400 mt-0.5">Cost: {formatCurrency(costPrice, settings.currency)}</p>}
         </div>
         <div className={`bg-white rounded-xl border p-4 shadow-sm ${margin >= 20 ? "border-emerald-200" : costPrice > 0 ? "border-amber-200" : "border-gray-200"}`}>
           <p className="text-xs text-gray-500">Margin</p>
@@ -260,7 +265,7 @@ export default async function BookingDetailPage({ params, searchParams }: Bookin
                   <Link href={`/deals/${booking.deal.id}`} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
                     <div>
                       <p className="text-sm font-medium text-indigo-600">{booking.deal.title}</p>
-                      <p className="text-xs text-gray-500">₹{booking.deal.value.toLocaleString("en-IN")}</p>
+                      <p className="text-xs text-gray-500">{formatCurrency(booking.deal.value, settings.currency)}</p>
                     </div>
                   </Link>
                 </div>
@@ -371,7 +376,7 @@ export default async function BookingDetailPage({ params, searchParams }: Bookin
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-green-600">₹{payment.amount.toLocaleString("en-IN")}</p>
+                      <p className="text-sm font-bold text-green-600">{formatCurrency(payment.amount, settings.currency)}</p>
                       <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${PAYMENT_STATUS_COLORS[payment.status]}`}>
                         {payment.status}
                       </span>

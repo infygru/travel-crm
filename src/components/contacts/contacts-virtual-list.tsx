@@ -7,6 +7,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Loader2, Users, Briefcase, CalendarCheck } from "lucide-react";
 import { LEAD_STATUS_COLORS } from "@/lib/constants";
+import { useFmt } from "@/components/currency-provider";
 
 type Contact = {
   id: string;
@@ -59,6 +60,7 @@ export function ContactsVirtualList({
   source?: string;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const fmt = useFmt();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
@@ -188,7 +190,7 @@ export function ContactsVirtualList({
                   <div className="px-4 py-3 flex items-center">
                     {contact.totalSpent > 0 ? (
                       <span className="text-sm font-semibold text-gray-900">
-                        ₹{contact.totalSpent.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                        {fmt(contact.totalSpent, { maximumFractionDigits: 0 })}
                       </span>
                     ) : <span className="text-xs text-gray-300">—</span>}
                   </div>

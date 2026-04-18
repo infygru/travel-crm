@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createBooking } from "@/lib/actions/bookings";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useFmt } from "@/components/currency-provider";
 
 type ContactOption = { id: string; firstName: string; lastName: string; email: string | null };
 type PackageOption = { id: string; name: string; basePrice: number; currency: string; duration: number; destinations: string[] };
@@ -28,6 +29,7 @@ export function NewBookingForm({
   preContact: PreContact;
 }) {
   const router = useRouter();
+  const fmt = useFmt();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [contactSearch, setContactSearch] = useState(
@@ -152,7 +154,7 @@ export function NewBookingForm({
             <option value="">— Custom Trip (no package) —</option>
             {packages.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} — ₹{p.basePrice.toLocaleString("en-IN")}
+                {p.name} — {fmt(p.basePrice)}
                 {p.destinations.length > 0 ? ` · ${p.destinations.slice(0, 2).join(", ")}` : ""}
               </option>
             ))}

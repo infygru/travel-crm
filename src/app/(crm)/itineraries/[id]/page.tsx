@@ -1,4 +1,6 @@
 import { getItineraryById } from "@/lib/actions/itineraries";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
@@ -13,7 +15,10 @@ interface ItineraryDetailPageProps {
 
 export default async function ItineraryDetailPage({ params }: ItineraryDetailPageProps) {
   const { id } = await params;
-  const itinerary = await getItineraryById(id);
+  const [itinerary, settings] = await Promise.all([
+    getItineraryById(id),
+    getCompanySettings(),
+  ]);
   if (!itinerary) notFound();
 
   const shareUrl = itinerary.shareToken
@@ -51,7 +56,7 @@ export default async function ItineraryDetailPage({ params }: ItineraryDetailPag
             <div className="text-right">
               <p className="text-xs text-gray-500">Total Cost</p>
               <p className="text-lg font-bold text-gray-900">
-                ₹{itinerary.totalCost.toLocaleString("en-IN")}
+                {formatCurrency(itinerary.totalCost, settings.currency)}
               </p>
             </div>
             <ConvertToBookingButton

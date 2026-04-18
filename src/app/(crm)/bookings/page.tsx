@@ -1,4 +1,6 @@
 import { getBookings, getBookingStats } from "@/lib/actions/bookings";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { BOOKING_STATUS_COLORS, PAYMENT_STATUS_COLORS } from "@/lib/constants";
 import { differenceInDays, format, isPast } from "date-fns";
 import Link from "next/link";
@@ -49,15 +51,15 @@ function BalanceCell({ total, paid, currency }: { total: number; paid: number; c
   if (balance <= 0) {
     return (
       <div className="text-right">
-        <p className="text-sm font-bold text-gray-900">₹{total.toLocaleString("en-IN")}</p>
+        <p className="text-sm font-bold text-gray-900">{formatCurrency(total, currency)}</p>
         <span className="text-xs text-green-600 font-medium">Fully paid</span>
       </div>
     );
   }
   return (
     <div className="text-right">
-      <p className="text-sm font-bold text-gray-900">₹{total.toLocaleString("en-IN")}</p>
-      <p className="text-xs text-red-600 font-medium">₹{balance.toLocaleString("en-IN")} due</p>
+      <p className="text-sm font-bold text-gray-900">{formatCurrency(total, currency)}</p>
+      <p className="text-xs text-red-600 font-medium">{formatCurrency(balance, currency)} due</p>
     </div>
   );
 }
@@ -76,7 +78,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
                        view === "inprogress" ? "IN_PROGRESS" :
                        params.status;
 
-  const [{ bookings, total, totalPages }, stats, contacts, packages] = await Promise.all([
+  const [{ bookings, total, totalPages }, stats, contacts, packages, settings] = await Promise.all([
     getBookings({
       search: params.search,
       status: statusFilter,
@@ -95,6 +97,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
       select: { id: true, name: true, basePrice: true, currency: true },
       orderBy: { name: "asc" },
     }),
+    getCompanySettings(),
   ]);
 
   function buildUrl(overrides: Record<string, string | undefined>) {
@@ -123,7 +126,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
           { label: "Total", value: stats.total, icon: CalendarCheck, color: "text-blue-600", bg: "bg-blue-50", href: "/bookings" },
           { label: "Confirmed", value: stats.confirmed, icon: Plane, color: "text-green-600", bg: "bg-green-50", href: "/bookings?status=CONFIRMED" },
           { label: "Pending", value: stats.pending, icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50", href: "/bookings?status=PENDING" },
-          { label: "Revenue Collected", value: `₹${stats.revenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, icon: DollarSign, color: "text-indigo-600", bg: "bg-indigo-50", href: "/bookings?paymentStatus=PAID" },
+          { label: "Revenue Collected", value: formatCurrency(stats.revenue, settings.currency, { maximumFractionDigits: 0 }), icon: DollarSign, color: "text-indigo-600", bg: "bg-indigo-50", href: "/bookings?paymentStatus=PAID" },
         ].map((stat) => {
           const Icon = stat.icon;
           return (

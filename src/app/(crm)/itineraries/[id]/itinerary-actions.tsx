@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { convertItineraryToBooking } from "@/lib/actions/itineraries";
 import { toast } from "sonner";
 import { CalendarCheck, Loader2 } from "lucide-react";
+import { useFmt } from "@/components/currency-provider";
 
 export function ConvertToBookingButton({
   itineraryId,
@@ -16,6 +17,7 @@ export function ConvertToBookingButton({
   totalCost: number;
 }) {
   const router = useRouter();
+  const fmt = useFmt();
   const [loading, setLoading] = useState(false);
   const [confirm, setConfirm] = useState(false);
 
@@ -56,7 +58,7 @@ export function ConvertToBookingButton({
   return (
     <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5">
       <span className="text-xs text-green-700 font-medium">
-        Create booking for ₹{totalCost.toLocaleString("en-IN")}?
+        Create booking for {fmt(totalCost)}?
       </span>
       <button
         onClick={handleConvert}

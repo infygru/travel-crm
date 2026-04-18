@@ -9,6 +9,8 @@ import {
   getPendingBookings,
   getPassportExpiryAlerts,
 } from "@/lib/actions/dashboard";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import {
   Plane,
   AlertTriangle,
@@ -52,6 +54,7 @@ export default async function DashboardPage() {
     paymentAlerts,
     pendingBookings,
     passportAlerts,
+    settings,
   ] = await Promise.all([
     getDashboardStats(),
     getRevenueByMonth(),
@@ -61,6 +64,7 @@ export default async function DashboardPage() {
     getPaymentAlerts(),
     getPendingBookings(),
     getPassportExpiryAlerts(90),
+    getCompanySettings(),
   ]);
 
   const hour = new Date().getHours();
@@ -130,7 +134,7 @@ export default async function DashboardPage() {
                 <p className="text-xs text-red-700">
                   {(() => {
                     const total = paymentAlerts.reduce((s, b) => s + (b.totalAmount - b.paidAmount), 0);
-                    return `₹${total.toLocaleString("en-IN")} balance due`;
+                    return `${formatCurrency(total, settings.currency)} balance due`;
                   })()}
                 </p>
               </div>
@@ -157,7 +161,7 @@ export default async function DashboardPage() {
         {[
           {
             label: "Revenue (All Time)",
-            value: `₹${stats.totalRevenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`,
+            value: formatCurrency(stats.totalRevenue, settings.currency, { maximumFractionDigits: 0 }),
             change: stats.prevMonthRevenue > 0
               ? ((stats.totalRevenue - stats.prevMonthRevenue) / stats.prevMonthRevenue) * 100
               : null,
@@ -372,7 +376,7 @@ export default async function DashboardPage() {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className={`text-xs font-bold ${isUrgent ? "text-red-600" : "text-amber-600"}`}>
-                        ₹{balance.toLocaleString("en-IN")}
+                        {formatCurrency(balance, settings.currency)}
                       </p>
                       <p className="text-xs text-gray-400">due</p>
                     </div>
@@ -464,7 +468,7 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-gray-900">₹{booking.totalAmount.toLocaleString("en-IN")}</p>
+                    <p className="text-sm font-bold text-gray-900">{formatCurrency(booking.totalAmount, settings.currency)}</p>
                   </div>
                 </Link>
               ))
@@ -494,7 +498,7 @@ export default async function DashboardPage() {
                       <p className="text-xs text-gray-400">{agent.bookingCount} booking{agent.bookingCount !== 1 ? "s" : ""}</p>
                     </div>
                     <span className="text-sm font-bold text-gray-900">
-                      ₹{agent.revenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                      {formatCurrency(agent.revenue, settings.currency, { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                 );

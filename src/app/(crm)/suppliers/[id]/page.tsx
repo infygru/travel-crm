@@ -1,4 +1,6 @@
 import { getSupplier } from "@/lib/actions/suppliers";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -23,7 +25,10 @@ export default async function SupplierDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supplier = await getSupplier(id);
+  const [supplier, settings] = await Promise.all([
+    getSupplier(id),
+    getCompanySettings(),
+  ]);
   if (!supplier) notFound();
 
   const totalPaid = supplier.payments
@@ -176,7 +181,7 @@ export default async function SupplierDetailPage({
                       <CreditCard className="w-4 h-4 text-gray-400" />
                       <div>
                         <p className="text-sm font-medium text-gray-800">
-                          ₹{payment.amount.toLocaleString("en-IN")}
+                          {formatCurrency(payment.amount, settings.currency)}
                         </p>
                         {payment.booking && (
                           <p className="text-xs text-gray-400">
@@ -224,13 +229,13 @@ export default async function SupplierDetailPage({
             <div>
               <p className="text-xs text-gray-400">Total Paid</p>
               <p className="text-lg font-bold text-green-600">
-                ₹{totalPaid.toLocaleString("en-IN")}
+                {formatCurrency(totalPaid, settings.currency)}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-400">Pending / Overdue</p>
               <p className={`text-lg font-bold ${totalPending > 0 ? "text-amber-600" : "text-gray-400"}`}>
-                ₹{totalPending.toLocaleString("en-IN")}
+                {formatCurrency(totalPending, settings.currency)}
               </p>
             </div>
             {supplier.paymentTerms && (

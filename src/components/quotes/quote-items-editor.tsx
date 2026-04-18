@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { updateQuoteItems } from "@/lib/actions/quotes";
 import { toast } from "sonner";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { useFmt } from "@/components/currency-provider";
 
 type QuoteItem = {
   id: string;
@@ -43,6 +44,7 @@ export function QuoteItemsEditor({
   canEdit: boolean;
 }) {
   const router = useRouter();
+  const fmt = useFmt();
   const [editing, setEditing] = useState(false);
   const [items, setItems] = useState<Omit<QuoteItem, "id">[]>(
     initialItems.map((i) => ({
@@ -136,7 +138,7 @@ export function QuoteItemsEditor({
                 </div>
                 <div className="text-right flex-shrink-0 ml-4">
                   <p className="text-sm font-semibold text-gray-900">
-                    ₹{item.totalPrice.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    {fmt(item.totalPrice, { maximumFractionDigits: 0 })}
                   </p>
                   {item.discount > 0 && (
                     <p className="text-xs text-green-600">{item.discount}% off</p>
@@ -225,7 +227,7 @@ export function QuoteItemsEditor({
           Add Item
         </button>
         <p className="text-sm font-semibold text-gray-900">
-          Subtotal: ₹{subtotal.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+          Subtotal: {fmt(subtotal, { maximumFractionDigits: 0 })}
         </p>
       </div>
 

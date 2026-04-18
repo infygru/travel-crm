@@ -1,4 +1,6 @@
 import { getQuote } from "@/lib/actions/quotes";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -13,7 +15,10 @@ export default async function QuoteDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const quote = await getQuote(id);
+  const [quote, settings] = await Promise.all([
+    getQuote(id),
+    getCompanySettings(),
+  ]);
   if (!quote) notFound();
 
   const shareUrl = quote.shareToken
@@ -97,14 +102,14 @@ export default async function QuoteDetailPage({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Subtotal</span>
                 <span className="font-medium text-gray-900">
-                  ₹{quote.subtotal.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                  {formatCurrency(quote.subtotal, settings.currency, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               {quote.discount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Discount</span>
                   <span className="font-medium text-red-600">
-                    −₹{quote.discount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    −{formatCurrency(quote.discount, settings.currency, { maximumFractionDigits: 0 })}
                   </span>
                 </div>
               )}
@@ -112,14 +117,14 @@ export default async function QuoteDetailPage({
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Taxes & Fees</span>
                   <span className="font-medium text-gray-900">
-                    +₹{quote.taxes.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    +{formatCurrency(quote.taxes, settings.currency, { maximumFractionDigits: 0 })}
                   </span>
                 </div>
               )}
               <div className="flex justify-between text-base font-bold border-t border-gray-100 pt-3">
                 <span className="text-gray-900">Total</span>
                 <span className="text-indigo-600">
-                  ₹{quote.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                  {formatCurrency(quote.totalAmount, settings.currency, { maximumFractionDigits: 0 })}
                 </span>
               </div>
             </div>

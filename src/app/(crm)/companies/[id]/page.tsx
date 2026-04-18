@@ -1,4 +1,6 @@
 import { getCompanyById } from "@/lib/actions/companies"
+import { getCompanySettings } from "@/lib/actions/settings"
+import { formatCurrency } from "@/lib/currency"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -22,7 +24,10 @@ const ACTIVITY_ICONS: Record<string, string> = {
 
 export default async function CompanyDetailPage({ params }: CompanyDetailPageProps) {
   const { id } = await params
-  const company = await getCompanyById(id)
+  const [company, settings] = await Promise.all([
+    getCompanyById(id),
+    getCompanySettings(),
+  ])
   if (!company) notFound()
 
   const totalDealValue = company.deals.reduce((sum, d) => sum + d.value, 0)
@@ -111,7 +116,7 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
             <p className="text-xs text-gray-500 mt-0.5">Won Deals</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">₹{(totalDealValue / 1000).toFixed(0)}k</p>
+            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalDealValue, settings.currency, { compact: true })}</p>
             <p className="text-xs text-gray-500 mt-0.5">Pipeline Value</p>
           </div>
         </div>
@@ -189,7 +194,7 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
                         {deal.status}
                       </span>
                       <p className="text-sm font-semibold text-gray-900">
-                        ₹{deal.value.toLocaleString("en-IN")}
+                        {formatCurrency(deal.value, settings.currency)}
                       </p>
                     </div>
                   </Link>
@@ -235,7 +240,7 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
                 { label: "Size", value: company.size ? `${company.size} employees` : null },
                 { label: "Country", value: company.country },
                 { label: "City", value: company.city },
-                { label: "Revenue", value: company.revenue ? `₹${(company.revenue / 1000000).toFixed(1)}M` : null },
+                { label: "Revenue", value: company.revenue ? formatCurrency(company.revenue, settings.currency, { compact: true }) : null },
                 { label: "Added", value: format(new Date(company.createdAt), "MMM d, yyyy") },
               ].filter(item => item.value).map(({ label, value }) => (
                 <div key={label} className="flex justify-between py-1.5 border-b border-gray-50">

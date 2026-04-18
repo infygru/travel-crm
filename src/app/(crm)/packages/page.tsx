@@ -10,6 +10,8 @@ import {
   Star,
 } from "lucide-react";
 import { NewPackageDialog } from "@/components/packages/new-package-dialog";
+import { formatCurrency } from "@/lib/currency";
+import { getCompanySettings } from "@/lib/actions/settings";
 
 const CATEGORY_COLORS: Record<string, string> = {
   ADVENTURE: "bg-orange-100 text-orange-700",
@@ -31,13 +33,16 @@ export default async function PackagesPage() {
   const session = await auth();
   if (!session) redirect("/login");
 
-  const packages = await db.travelPackage.findMany({
-    where: { isActive: true },
-    include: {
-      _count: { select: { bookings: true, deals: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const [packages, settings] = await Promise.all([
+    db.travelPackage.findMany({
+      where: { isActive: true },
+      include: {
+        _count: { select: { bookings: true, deals: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    getCompanySettings(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -122,7 +127,7 @@ export default async function PackagesPage() {
                     <p className="text-xs text-gray-400">From</p>
                     <div className="flex items-center gap-1">
                       <span className="text-lg font-bold text-indigo-600">
-                        ₹{pkg.basePrice.toLocaleString("en-IN")}
+                        {formatCurrency(pkg.basePrice, settings.currency)}
                       </span>
                     </div>
                   </div>

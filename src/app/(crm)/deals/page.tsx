@@ -1,4 +1,6 @@
 import { getDealsByPipeline, getPipelines } from "@/lib/actions/deals";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { KanbanBoard } from "@/components/deals/kanban-board";
@@ -10,9 +12,10 @@ interface DealsPageProps {
 
 export default async function DealsPage({ searchParams }: DealsPageProps) {
   const params = await searchParams;
-  const [pipeline, pipelines] = await Promise.all([
+  const [pipeline, pipelines, settings] = await Promise.all([
     getDealsByPipeline(params.pipelineId),
     getPipelines(),
+    getCompanySettings(),
   ]);
 
   const totalValue = pipeline?.stages.reduce((sum, stage) => {
@@ -35,7 +38,7 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Deal Pipeline</h1>
           <p className="text-gray-500 mt-1">
-            {totalDeals} open deals · ₹{totalValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })} total value
+            {totalDeals} open deals · {formatCurrency(totalValue, settings.currency, { maximumFractionDigits: 0 })} total value
           </p>
         </div>
         <div className="flex items-center gap-3">

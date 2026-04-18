@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createQuote } from "@/lib/actions/quotes";
 import { Plus, X, Trash2 } from "lucide-react";
+import { useFmt } from "@/components/currency-provider";
 
 type ContactOption = { id: string; firstName: string; lastName: string; email: string | null };
 type DealOption = { id: string; title: string };
@@ -26,6 +27,7 @@ export function NewQuoteDialog({
   deals: DealOption[];
 }) {
   const router = useRouter();
+  const fmt = useFmt();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -271,7 +273,7 @@ export function NewQuoteDialog({
 
                 <div className="flex justify-end mt-2">
                   <p className="text-sm font-semibold text-gray-900">
-                    Subtotal: ₹{subtotal.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    Subtotal: {fmt(subtotal, { maximumFractionDigits: 0 })}
                   </p>
                 </div>
               </div>

@@ -1,4 +1,6 @@
 import { getContacts } from "@/lib/actions/contacts";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { LEAD_STATUS_COLORS } from "@/lib/constants";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -31,13 +33,16 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
   const params = await searchParams;
   const page = parseInt(params.page ?? "1");
 
-  const { contacts, total, totalPages } = await getContacts({
-    search: params.search,
-    status: params.status,
-    source: params.source,
-    page,
-    limit: 25,
-  });
+  const [{ contacts, total, totalPages }, settings] = await Promise.all([
+    getContacts({
+      search: params.search,
+      status: params.status,
+      source: params.source,
+      page,
+      limit: 25,
+    }),
+    getCompanySettings(),
+  ]);
 
   function buildUrl(overrides: Record<string, string | undefined>) {
     const p = new URLSearchParams();
@@ -195,7 +200,7 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
                     <td className="px-5 py-3.5">
                       {contact.totalSpent > 0 ? (
                         <span className="text-sm font-semibold text-gray-900">
-                          ₹{contact.totalSpent.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                          {formatCurrency(contact.totalSpent, settings.currency, { maximumFractionDigits: 0 })}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-300">—</span>

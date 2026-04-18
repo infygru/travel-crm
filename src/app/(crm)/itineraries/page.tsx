@@ -1,4 +1,6 @@
 import { getItineraries, getItineraryStats } from "@/lib/actions/itineraries";
+import { getCompanySettings } from "@/lib/actions/settings";
+import { formatCurrency } from "@/lib/currency";
 import { ITINERARY_STATUS_COLORS } from "@/lib/constants";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -19,9 +21,10 @@ export default async function ItinerariesPage({ searchParams }: ItinerariesPageP
   const search = sp.search;
   const page = Number(sp.page ?? 1);
 
-  const [{ itineraries, total, totalPages }, stats] = await Promise.all([
+  const [{ itineraries, total, totalPages }, stats, settings] = await Promise.all([
     getItineraries({ status, search, page, limit: 20 }),
     getItineraryStats(),
+    getCompanySettings(),
   ]);
 
   const { draft: draftCount, shared: sharedCount, approved: approvedCount } = stats;
@@ -180,7 +183,7 @@ export default async function ItinerariesPage({ searchParams }: ItinerariesPageP
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-sm font-medium text-gray-900">
-                        ₹{itin.totalCost.toLocaleString("en-IN")}
+                        {formatCurrency(itin.totalCost, settings.currency)}
                       </span>
                     </td>
                     <td className="px-4 py-3">

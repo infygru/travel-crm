@@ -1,5 +1,7 @@
 "use client";
 
+import { useFmt } from "@/components/currency-provider";
+
 interface FunnelData {
   name: string;
   count: number;
@@ -8,6 +10,7 @@ interface FunnelData {
 }
 
 export function FunnelChart({ data }: { data: FunnelData[] }) {
+  const fmt = useFmt();
   const maxCount = Math.max(...data.map((d) => d.count), 1);
 
   if (data.length === 0) {
@@ -27,7 +30,7 @@ export function FunnelChart({ data }: { data: FunnelData[] }) {
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400">{stage.count} deals</span>
               <span className="text-xs font-semibold text-gray-600">
-                ₹{stage.value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                {fmt(stage.value, { maximumFractionDigits: 0 })}
               </span>
             </div>
           </div>

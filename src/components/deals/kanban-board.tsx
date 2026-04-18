@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { Calendar, ExternalLink } from "lucide-react";
 import { PRIORITY_COLORS } from "@/lib/constants";
 import Link from "next/link";
+import { useFmt } from "@/components/currency-provider";
 
 interface Deal {
   id: string;
@@ -46,6 +47,7 @@ interface Pipeline {
 }
 
 export function KanbanBoard({ pipeline }: { pipeline: Pipeline }) {
+  const fmt = useFmt();
   const [stages, setStages] = useState(pipeline.stages);
   const [movingDealId, setMovingDealId] = useState<string | null>(null);
 
@@ -98,7 +100,7 @@ export function KanbanBoard({ pipeline }: { pipeline: Pipeline }) {
                 </span>
               </div>
               <span className="text-xs font-semibold text-gray-500">
-                ₹{stageValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                {fmt(stageValue, { maximumFractionDigits: 0 })}
               </span>
             </div>
 
@@ -129,7 +131,7 @@ export function KanbanBoard({ pipeline }: { pipeline: Pipeline }) {
                   {/* Value */}
                   <div className="flex items-center gap-1 text-indigo-600 mb-3">
                     <span className="text-sm font-bold">
-                      ₹{deal.value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                      {fmt(deal.value, { maximumFractionDigits: 0 })}
                     </span>
                   </div>
 

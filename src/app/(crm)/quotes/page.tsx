@@ -6,6 +6,8 @@ import { FileText } from "lucide-react";
 import { NewQuoteDialog } from "@/components/quotes/new-quote-dialog";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
+import { formatCurrency } from "@/lib/currency";
+import { getCompanySettings } from "@/lib/actions/settings";
 
 export default async function QuotesPage({
   searchParams,
@@ -14,25 +16,26 @@ export default async function QuotesPage({
 }) {
   const session = await auth();
   const params = await searchParams;
-  const { quotes, total } = await getQuotes({
-    search: params.search,
-    status: params.status,
-    page: Number(params.page ?? 1),
-  });
-
-  const contacts = await db.contact.findMany({
-    select: { id: true, firstName: true, lastName: true, email: true },
-    where: { isActive: true },
-    orderBy: { firstName: "asc" },
-    take: 100,
-  });
-
-  const deals = await db.deal.findMany({
-    select: { id: true, title: true },
-    where: { status: "OPEN" },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
+  const [{ quotes, total }, contacts, deals, settings] = await Promise.all([
+    getQuotes({
+      search: params.search,
+      status: params.status,
+      page: Number(params.page ?? 1),
+    }),
+    db.contact.findMany({
+      select: { id: true, firstName: true, lastName: true, email: true },
+      where: { isActive: true },
+      orderBy: { firstName: "asc" },
+      take: 100,
+    }),
+    db.deal.findMany({
+      select: { id: true, title: true },
+      where: { status: "OPEN" },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+    getCompanySettings(),
+  ]);
 
   const statuses = ["DRAFT", "SENT", "ACCEPTED", "DECLINED", "EXPIRED", "CONVERTED"];
 
@@ -116,7 +119,7 @@ export default async function QuotesPage({
               </div>
               <div className="px-4 py-3 flex items-center">
                 <span className="text-sm font-semibold text-gray-900">
-                  ₹{quote.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                  {formatCurrency(quote.totalAmount, settings.currency, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="px-4 py-3 flex items-center">

@@ -11,6 +11,8 @@ import { getLeadAnalytics } from "@/lib/actions/leads";
 import { BarRevenueChart } from "@/components/charts/bar-revenue-chart";
 import { BookingsPieChart } from "@/components/charts/bookings-pie-chart";
 import { BarChart3, TrendingUp, TrendingDown, Users, Globe, Minus } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
+import { getCompanySettings } from "@/lib/actions/settings";
 
 function TrendBadge({ current, previous }: { current: number; previous: number }) {
   if (previous === 0) {
@@ -42,13 +44,14 @@ export default async function ReportsPage() {
   const session = await auth();
   if (!session) redirect("/login");
 
-  const [revenueData, bookingsByStatus, topAgents, leadSources, dashStats, leadAnalytics] = await Promise.all([
+  const [revenueData, bookingsByStatus, topAgents, leadSources, dashStats, leadAnalytics, settings] = await Promise.all([
     getRevenueByMonth(),
     getBookingsByStatus(),
     getTopAgents(10),
     getLeadSourceBreakdown(),
     getDashboardStats(),
     getLeadAnalytics(),
+    getCompanySettings(),
   ]);
 
   const totalRevenue = revenueData.reduce((sum, d) => sum + d.revenue, 0);
@@ -69,7 +72,7 @@ export default async function ReportsPage() {
   const SUMMARY_STATS = [
     {
       label: "Annual Revenue",
-      value: `₹${totalRevenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`,
+      value: formatCurrency(totalRevenue, settings.currency, { maximumFractionDigits: 0 }),
       current: currentMonth,
       previous: priorMonth,
       note: "vs prior month",
@@ -128,7 +131,7 @@ export default async function ReportsPage() {
           </div>
           <div className="text-right">
             <p className="text-sm font-bold text-gray-900">
-              ₹{totalRevenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+              {formatCurrency(totalRevenue, settings.currency, { maximumFractionDigits: 0 })}
             </p>
             <p className="text-xs text-gray-400">Total</p>
           </div>
@@ -270,7 +273,7 @@ export default async function ReportsPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className="text-sm font-bold text-gray-900">
-                        ₹{agent.revenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                        {formatCurrency(agent.revenue, settings.currency, { maximumFractionDigits: 0 })}
                       </span>
                     </td>
                   </tr>

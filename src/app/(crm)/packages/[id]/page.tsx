@@ -6,6 +6,8 @@ import { ArrowLeft, Package, MapPin, Clock, Users, DollarSign, CheckCircle, XCir
 import { BOOKING_STATUS_COLORS, DEAL_STATUS_COLORS } from "@/lib/constants"
 import { PackageActions } from "./package-actions"
 import { PackageDayEditor } from "@/components/packages/package-day-editor"
+import { formatCurrency } from "@/lib/currency"
+import { getCompanySettings } from "@/lib/actions/settings"
 
 interface PackageDetailPageProps {
   params: Promise<{ id: string }>
@@ -29,7 +31,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default async function PackageDetailPage({ params }: PackageDetailPageProps) {
   const { id } = await params
-  const pkg = await getPackageById(id)
+  const [pkg, settings] = await Promise.all([getPackageById(id), getCompanySettings()])
   if (!pkg) notFound()
 
   return (
@@ -98,7 +100,7 @@ export default async function PackageDetailPage({ params }: PackageDetailPagePro
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
             <div className="text-center">
               <p className="text-2xl font-bold text-indigo-600">
-                ₹{pkg.basePrice.toLocaleString("en-IN")}
+                {formatCurrency(pkg.basePrice, settings.currency)}
               </p>
               <p className="text-xs text-gray-500 mt-0.5">Base Price</p>
             </div>
@@ -231,7 +233,7 @@ export default async function PackageDetailPage({ params }: PackageDetailPagePro
                         {booking.status}
                       </span>
                       {booking.totalAmount != null && (
-                        <p className="text-sm font-semibold text-gray-900">₹{booking.totalAmount.toLocaleString("en-IN")}</p>
+                        <p className="text-sm font-semibold text-gray-900">{formatCurrency(booking.totalAmount, settings.currency)}</p>
                       )}
                     </div>
                   </Link>
@@ -267,7 +269,7 @@ export default async function PackageDetailPage({ params }: PackageDetailPagePro
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${DEAL_STATUS_COLORS[deal.status] ?? "bg-gray-100 text-gray-600"}`}>
                         {deal.status}
                       </span>
-                      <p className="text-sm font-semibold text-gray-900">₹{deal.value.toLocaleString("en-IN")}</p>
+                      <p className="text-sm font-semibold text-gray-900">{formatCurrency(deal.value, settings.currency)}</p>
                     </div>
                   </Link>
                 ))}
@@ -288,7 +290,7 @@ export default async function PackageDetailPage({ params }: PackageDetailPagePro
                 { label: "Category", value: pkg.category.replace(/_/g, " ") },
                 { label: "Duration", value: `${pkg.duration} days` },
                 { label: "Currency", value: pkg.currency },
-                { label: "Base Price", value: `₹${pkg.basePrice.toLocaleString("en-IN")}` },
+                { label: "Base Price", value: formatCurrency(pkg.basePrice, settings.currency) },
                 { label: "Max Pax", value: pkg.maxPax ? `${pkg.maxPax} persons` : null },
                 { label: "Status", value: pkg.isActive ? "Active" : "Inactive" },
                 { label: "Created", value: format(new Date(pkg.createdAt), "MMM d, yyyy") },

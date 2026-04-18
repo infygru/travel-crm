@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { updateBookingStatus, addPayment, updateBooking, addPassenger, removePassenger, addBookingNote, resendBookingConfirmation } from "@/lib/actions/bookings";
 import { Check, X, DollarSign, RotateCcw, Loader2, Pencil, Plus, Trash2, MessageSquare, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { useFmt } from "@/components/currency-provider";
 
 const inputCls = "w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white";
 
@@ -265,6 +266,7 @@ export function AddPaymentForm({
   balanceDue: number;
 }) {
   const router = useRouter();
+  const fmt = useFmt();
   const [show, setShow] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -288,7 +290,7 @@ export function AddPaymentForm({
         reference: form.reference || undefined,
         notes: form.notes || undefined,
       });
-      toast.success(`Payment of ₹${amount.toLocaleString("en-IN")} recorded`);
+      toast.success(`Payment of ${fmt(amount)} recorded`);
       setShow(false);
       setForm({ amount: "", method: "BANK_TRANSFER", reference: "", notes: "" });
       router.refresh();

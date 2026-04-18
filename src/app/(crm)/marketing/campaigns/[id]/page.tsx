@@ -72,10 +72,10 @@ export default async function CampaignDetailPage({ params }: Props) {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Total Sent", value: campaign.totalSent.toLocaleString("en-IN"), icon: Send, color: "text-indigo-600", bg: "bg-indigo-50" },
+          { label: "Total Sent", value: campaign.totalSent.toLocaleString(), icon: Send, color: "text-indigo-600", bg: "bg-indigo-50" },
           { label: "Open Rate", value: `${openRate}%`, icon: BarChart3, color: openRate >= 20 ? "text-green-600" : "text-yellow-600", bg: openRate >= 20 ? "bg-green-50" : "bg-yellow-50" },
           { label: "Click Rate", value: `${clickRate}%`, icon: MousePointerClick, color: clickRate >= 5 ? "text-green-600" : "text-gray-600", bg: clickRate >= 5 ? "bg-green-50" : "bg-gray-50" },
-          { label: "Recipients", value: campaign._count.sends.toLocaleString("en-IN"), icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Recipients", value: campaign._count.sends.toLocaleString(), icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
         ].map(stat => {
           const Icon = stat.icon;
           return (
@@ -188,7 +188,7 @@ export default async function CampaignDetailPage({ params }: Props) {
               </div>
               {campaign._count.sends > 20 && (
                 <div className="px-4 py-2 border-t border-gray-100 text-center text-xs text-gray-400">
-                  Showing 20 of {campaign._count.sends.toLocaleString("en-IN")} sends
+                  Showing 20 of {campaign._count.sends.toLocaleString()} sends
                 </div>
               )}
             </div>
@@ -213,7 +213,7 @@ export default async function CampaignDetailPage({ params }: Props) {
                       <Icon className={`w-3.5 h-3.5 ${row.color}`} />
                       <span className="text-sm text-gray-600">{row.label}</span>
                     </div>
-                    <span className="text-sm font-semibold text-gray-900">{row.value.toLocaleString("en-IN")}</span>
+                    <span className="text-sm font-semibold text-gray-900">{row.value.toLocaleString()}</span>
                   </div>
                 );
               })}

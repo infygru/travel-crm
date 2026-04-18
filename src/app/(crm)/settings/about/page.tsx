@@ -65,7 +65,7 @@ export default function AboutPage() {
               <ShieldCheck className="w-3.5 h-3.5" /> Enterprise Grade
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-200 text-xs font-semibold">
-              <Globe className="w-3.5 h-3.5" /> Multi-Currency (₹ default)
+              <Globe className="w-3.5 h-3.5" /> Multi-Currency (INR, USD, EUR +30 more)
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-semibold">
               <Zap className="w-3.5 h-3.5" /> Real-time Updates
