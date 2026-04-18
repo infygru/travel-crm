@@ -14,7 +14,7 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle2,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   Users,
   CalendarCheck,
@@ -77,11 +77,14 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{greeting}, {firstName}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-bold">
+            <span className="text-gray-700">{greeting}, </span>
+            <span className="gradient-text">{firstName}</span>
+          </h1>
+          <p className="text-sm text-gray-400 mt-0.5 font-medium">
             {format(new Date(), "EEEE, MMMM d, yyyy")}
             {totalAlerts > 0 && (
-              <span className="ml-2 inline-flex items-center gap-1 text-red-600 font-medium">
+              <span className="ml-2 inline-flex items-center gap-1 text-rose-500 font-semibold">
                 <AlertTriangle className="w-3.5 h-3.5" />
                 {totalAlerts} item{totalAlerts !== 1 ? "s" : ""} need attention
               </span>
@@ -90,13 +93,13 @@ export default async function DashboardPage() {
         </div>
         {/* Quick Actions */}
         <div className="flex items-center gap-2">
-          <Link href="/leads" className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+          <Link href="/leads" className="btn-primary flex items-center gap-1.5 px-3.5 py-2 text-sm">
             <UserPlus className="w-3.5 h-3.5" /> Add Lead
           </Link>
-          <Link href="/deals" className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <TrendingUp className="w-3.5 h-3.5" /> View Deals
+          <Link href="/deals" className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-violet-600 bg-violet-50 border border-violet-100 rounded-xl hover:bg-violet-100 transition-colors">
+            <TrendingUp className="w-3.5 h-3.5" /> Deals
           </Link>
-          <Link href="/itineraries/new" className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <Link href="/itineraries/new" className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-violet-50/40 transition-colors">
             <Plane className="w-3.5 h-3.5" /> New Itinerary
           </Link>
         </div>
@@ -106,7 +109,7 @@ export default async function DashboardPage() {
       {totalAlerts > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {pendingBookings.length > 0 && (
-            <Link href="/bookings?status=PENDING" className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors group">
+            <Link href="/bookings?status=PENDING" className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl hover:bg-amber-100 transition-colors group">
               <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
                 <Clock className="w-5 h-5 text-amber-600" />
               </div>
@@ -118,7 +121,7 @@ export default async function DashboardPage() {
             </Link>
           )}
           {paymentAlerts.length > 0 && (
-            <Link href="/bookings?paymentStatus=PARTIAL" className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors group">
+            <Link href="/bookings?paymentStatus=PARTIAL" className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl hover:bg-red-100 transition-colors group">
               <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
                 <CreditCard className="w-5 h-5 text-red-600" />
               </div>
@@ -135,7 +138,7 @@ export default async function DashboardPage() {
             </Link>
           )}
           {passportAlerts.length > 0 && (
-            <Link href="/bookings" className="flex items-center gap-3 p-4 bg-purple-50 border border-purple-200 rounded-xl hover:bg-purple-100 transition-colors group">
+            <Link href="/bookings" className="flex items-center gap-3 p-4 bg-purple-50 border border-purple-200 rounded-2xl hover:bg-purple-100 transition-colors group">
               <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
                 <FileWarning className="w-5 h-5 text-purple-600" />
               </div>
@@ -158,7 +161,11 @@ export default async function DashboardPage() {
             change: stats.prevMonthRevenue > 0
               ? ((stats.totalRevenue - stats.prevMonthRevenue) / stats.prevMonthRevenue) * 100
               : null,
-            icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50",
+            icon: IndianRupee,
+            iconGradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+            cardAccent: "from-emerald-50/80 to-white",
+            borderColor: "border-emerald-100",
+            valueColor: "text-emerald-700",
           },
           {
             label: "Active Bookings",
@@ -166,7 +173,11 @@ export default async function DashboardPage() {
             change: stats.prevActiveBookings > 0
               ? ((stats.activeBookings - stats.prevActiveBookings) / stats.prevActiveBookings) * 100
               : null,
-            icon: CalendarCheck, color: "text-blue-600", bg: "bg-blue-50",
+            icon: CalendarCheck,
+            iconGradient: "linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)",
+            cardAccent: "from-sky-50/80 to-white",
+            borderColor: "border-sky-100",
+            valueColor: "text-sky-700",
           },
           {
             label: "New Leads (30d)",
@@ -174,51 +185,70 @@ export default async function DashboardPage() {
             change: stats.prevNewLeads > 0
               ? ((stats.newLeads - stats.prevNewLeads) / stats.prevNewLeads) * 100
               : null,
-            icon: Users, color: "text-violet-600", bg: "bg-violet-50",
+            icon: Users,
+            iconGradient: "linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)",
+            cardAccent: "from-violet-50/80 to-white",
+            borderColor: "border-violet-100",
+            valueColor: "text-violet-700",
           },
           {
             label: "Deal Conversion",
             value: `${stats.conversionRate.toFixed(1)}%`,
             change: null,
-            icon: TrendingUp, color: "text-amber-600", bg: "bg-amber-50",
+            icon: TrendingUp,
+            iconGradient: "linear-gradient(135deg, #f59e0b 0%, #f97316 100%)",
+            cardAccent: "from-amber-50/80 to-white",
+            borderColor: "border-amber-100",
+            valueColor: "text-amber-700",
           },
         ].map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`p-2 rounded-lg ${card.bg}`}>
-                  <Icon className={`w-4 h-4 ${card.color}`} />
+            <div
+              key={card.label}
+              className={`relative bg-gradient-to-br ${card.cardAccent} rounded-2xl border ${card.borderColor} p-5 card-glow card-glow-hover overflow-hidden`}
+            >
+              {/* Background decoration */}
+              <div
+                className="absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-[0.06]"
+                style={{ background: card.iconGradient }}
+              />
+              <div className="flex items-center justify-between mb-4">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: card.iconGradient }}
+                >
+                  <Icon className="w-4 h-4 text-white" />
                 </div>
                 {card.change !== null && (
-                  <span className={`flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                    card.change >= 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+                  <span className={`flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    card.change >= 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
                   }`}>
                     {card.change >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     {Math.abs(card.change).toFixed(1)}%
                   </span>
                 )}
               </div>
-              <p className="text-2xl font-bold text-gray-900">{card.value}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
+              <p className={`text-2xl font-bold ${card.valueColor}`}>{card.value}</p>
+              <p className="text-xs text-gray-500 mt-1 font-medium">{card.label}</p>
             </div>
           );
         })}
       </div>
 
       {/* ── UPCOMING DEPARTURES ────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-violet-100/60 card-glow overflow-hidden">
+        <div className="px-6 py-4 border-b border-violet-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Plane className="w-4 h-4 text-indigo-600" />
-            <h2 className="text-base font-semibold text-gray-900">Departures — Next 14 Days</h2>
+            <Plane className="w-4 h-4 text-violet-600" />
+            <h2 className="text-[15px] font-bold text-gray-800">Departures — Next 14 Days</h2>
             {upcomingDepartures.length > 0 && (
-              <span className="text-xs font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full">
                 {upcomingDepartures.length}
               </span>
             )}
           </div>
-          <Link href="/bookings?status=CONFIRMED" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+          <Link href="/bookings?status=CONFIRMED" className="text-sm text-violet-600 hover:text-violet-700 font-medium">
             All bookings →
           </Link>
         </div>
@@ -232,7 +262,7 @@ export default async function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
+                <tr className="bg-violet-50/40 border-b border-violet-100/50">
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-2.5">Booking</th>
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-2.5">Traveler</th>
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-2.5">Trip</th>
@@ -242,21 +272,21 @@ export default async function DashboardPage() {
                   <th className="px-6 py-2.5"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-violet-50/60">
                 {upcomingDepartures.map((booking) => {
                   const days = differenceInDays(new Date(booking.startDate), new Date());
                   const isUrgent = days <= 2;
                   return (
-                    <tr key={booking.id} className={`hover:bg-gray-50 transition-colors ${isUrgent ? "bg-red-50/30" : ""}`}>
+                    <tr key={booking.id} className={`hover:bg-violet-50/40 transition-colors ${isUrgent ? "bg-red-50/30" : ""}`}>
                       <td className="px-6 py-3">
-                        <Link href={`/bookings/${booking.id}`} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
+                        <Link href={`/bookings/${booking.id}`} className="text-sm font-bold text-violet-600 hover:text-violet-700">
                           {booking.bookingRef.slice(0, 8).toUpperCase()}
                         </Link>
                       </td>
                       <td className="px-6 py-3">
                         {booking.contact ? (
                           <div>
-                            <Link href={`/contacts/${booking.contact.id}`} className="text-sm font-medium text-gray-900 hover:text-indigo-600">
+                            <Link href={`/contacts/${booking.contact.id}`} className="text-sm font-medium text-gray-900 hover:text-violet-600">
                               {booking.contact.firstName} {booking.contact.lastName}
                             </Link>
                             {booking.contact.phone && (
@@ -283,7 +313,7 @@ export default async function DashboardPage() {
                         </span>
                       </td>
                       <td className="px-6 py-3">
-                        <Link href={`/bookings/${booking.id}`} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                        <Link href={`/bookings/${booking.id}`} className="text-xs text-violet-600 hover:text-violet-700 font-medium">
                           View →
                         </Link>
                       </td>
@@ -299,10 +329,10 @@ export default async function DashboardPage() {
       {/* ── REVENUE + PAYMENT ALERTS ──────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Revenue Chart */}
-        <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div className="xl:col-span-2 bg-white rounded-2xl border border-violet-100/60 p-6 card-glow">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-base font-semibold text-gray-900">Revenue — Last 12 Months</h2>
+              <h2 className="text-[15px] font-bold text-gray-800">Revenue — Last 12 Months</h2>
               <p className="text-sm text-gray-400">Confirmed + Completed bookings</p>
             </div>
           </div>
@@ -310,15 +340,15 @@ export default async function DashboardPage() {
         </div>
 
         {/* Payment Alerts */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-violet-100/60 card-glow overflow-hidden">
+          <div className="px-5 py-4 border-b border-violet-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-red-500" />
-              <h2 className="text-sm font-semibold text-gray-900">Payments Due</h2>
+              <h2 className="text-sm font-bold text-gray-800">Payments Due</h2>
             </div>
-            <Link href="/bookings?paymentStatus=PARTIAL" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">View all</Link>
+            <Link href="/bookings?paymentStatus=PARTIAL" className="text-xs text-violet-600 hover:text-violet-700 font-medium">View all</Link>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-violet-50/60">
             {paymentAlerts.length === 0 ? (
               <div className="px-5 py-8 text-center">
                 <CheckCircle2 className="w-7 h-7 text-green-300 mx-auto mb-1.5" />
@@ -330,7 +360,7 @@ export default async function DashboardPage() {
                 const daysToDepart = differenceInDays(new Date(booking.startDate), new Date());
                 const isUrgent = daysToDepart <= 7;
                 return (
-                  <Link key={booking.id} href={`/bookings/${booking.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                  <Link key={booking.id} href={`/bookings/${booking.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-violet-50/40 transition-colors">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isUrgent ? "bg-red-500" : "bg-amber-400"}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-gray-900 truncate">
@@ -357,20 +387,20 @@ export default async function DashboardPage() {
       {/* ── TASKS + AGENTS + PENDING ──────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Tasks Due Today */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-violet-100/60 card-glow overflow-hidden">
+          <div className="px-5 py-4 border-b border-violet-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-orange-500" />
-              <h2 className="text-sm font-semibold text-gray-900">Today&apos;s Follow-ups</h2>
+              <h2 className="text-sm font-bold text-gray-800">Today&apos;s Follow-ups</h2>
               {tasksDueToday.length > 0 && (
                 <span className="text-xs font-bold text-orange-700 bg-orange-100 px-1.5 py-0.5 rounded-full">
                   {tasksDueToday.length}
                 </span>
               )}
             </div>
-            <Link href="/tasks" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">View all</Link>
+            <Link href="/tasks" className="text-xs text-violet-600 hover:text-violet-700 font-medium">View all</Link>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-violet-50/60">
             {tasksDueToday.length === 0 ? (
               <div className="px-5 py-8 text-center">
                 <CheckCircle2 className="w-7 h-7 text-green-300 mx-auto mb-1.5" />
@@ -378,7 +408,7 @@ export default async function DashboardPage() {
               </div>
             ) : (
               tasksDueToday.slice(0, 5).map((task) => (
-                <div key={task.id} className="px-5 py-3 hover:bg-gray-50">
+                <div key={task.id} className="px-5 py-3 hover:bg-violet-50/40">
                   <div className="flex items-start gap-3">
                     <span className={`inline-flex items-center mt-0.5 text-xs px-1.5 py-0.5 rounded font-medium ${PRIORITY_COLORS[task.priority]}`}>
                       {task.priority[0]}
@@ -400,20 +430,20 @@ export default async function DashboardPage() {
         </div>
 
         {/* Pending Bookings */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-violet-100/60 card-glow overflow-hidden">
+          <div className="px-5 py-4 border-b border-violet-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <h2 className="text-sm font-semibold text-gray-900">Awaiting Confirmation</h2>
+              <h2 className="text-sm font-bold text-gray-800">Awaiting Confirmation</h2>
               {pendingBookings.length > 0 && (
                 <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
                   {pendingBookings.length}
                 </span>
               )}
             </div>
-            <Link href="/bookings?status=PENDING" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">View all</Link>
+            <Link href="/bookings?status=PENDING" className="text-xs text-violet-600 hover:text-violet-700 font-medium">View all</Link>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-violet-50/60">
             {pendingBookings.length === 0 ? (
               <div className="px-5 py-8 text-center">
                 <CheckCircle2 className="w-7 h-7 text-green-300 mx-auto mb-1.5" />
@@ -421,7 +451,7 @@ export default async function DashboardPage() {
               </div>
             ) : (
               pendingBookings.slice(0, 5).map((booking) => (
-                <Link key={booking.id} href={`/bookings/${booking.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                <Link key={booking.id} href={`/bookings/${booking.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-violet-50/40 transition-colors">
                   <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold flex-shrink-0">
                     {booking.contact?.firstName?.[0] ?? "?"}{booking.contact?.lastName?.[0] ?? ""}
                   </div>
@@ -443,11 +473,11 @@ export default async function DashboardPage() {
         </div>
 
         {/* Top Agents */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-900">Top Agents This Month</h2>
+        <div className="bg-white rounded-2xl border border-violet-100/60 card-glow overflow-hidden">
+          <div className="px-5 py-4 border-b border-violet-50">
+            <h2 className="text-sm font-bold text-gray-800">Top Agents This Month</h2>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-violet-50/60">
             {topAgents.length === 0 ? (
               <div className="px-5 py-8 text-center text-sm text-gray-400">No agent data yet</div>
             ) : (
@@ -456,7 +486,7 @@ export default async function DashboardPage() {
                 return (
                   <div key={agent.id} className="px-5 py-3 flex items-center gap-3">
                     <span className="text-base w-6 text-center">{medals[i] ?? `${i + 1}`}</span>
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-xs font-bold flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 text-xs font-bold flex-shrink-0">
                       {agent.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                     </div>
                     <div className="flex-1 min-w-0">

@@ -1,5 +1,6 @@
 import { getContactById, getAgents } from "@/lib/actions/contacts";
 import { getSequences, getContactEnrollments } from "@/lib/actions/marketing";
+import { getQuotes } from "@/lib/actions/quotes";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -37,15 +38,17 @@ export default async function ContactDetailPage({ params, searchParams }: Contac
   const { id } = await params;
   const { tab = "overview" } = await searchParams;
 
-  const [contact, agents, sequences, enrollments] = await Promise.all([
+  const [contact, agents, sequences, enrollments, quotesResult] = await Promise.all([
     getContactById(id),
     getAgents(),
     getSequences(),
     getContactEnrollments(id),
+    getQuotes({ contactId: id }),
   ]);
   if (!contact) notFound();
 
   const activeSequences = sequences.filter((s) => s.isActive);
+  const contactQuotes = quotesResult.quotes;
 
   const fullName = `${contact.firstName} ${contact.lastName}`;
   const initials = `${contact.firstName[0]}${contact.lastName[0]}`.toUpperCase();
@@ -53,6 +56,7 @@ export default async function ContactDetailPage({ params, searchParams }: Contac
   const tabs = [
     { id: "overview", label: "Overview" },
     { id: "deals", label: `Deals (${contact.deals.length})` },
+    { id: "quotes", label: `Quotes (${contactQuotes.length})` },
     { id: "bookings", label: `Bookings (${contact.bookings.length})` },
     { id: "tasks", label: `Tasks (${contact.tasks.length})` },
     { id: "sequences", label: `Sequences (${enrollments.length})` },
@@ -293,6 +297,49 @@ export default async function ContactDetailPage({ params, searchParams }: Contac
                       </span>
                     </div>
                   </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {tab === "quotes" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-gray-700">Quotes & Proposals</p>
+                <Link
+                  href={`/quotes?contactId=${contact.id}`}
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                  View all →
+                </Link>
+              </div>
+              {contactQuotes.length === 0 ? (
+                <div className="text-center py-8 text-sm text-gray-400">No quotes yet</div>
+              ) : (
+                contactQuotes.map((q) => (
+                  <Link
+                    key={q.id}
+                    href={`/quotes/${q.id}`}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-indigo-50 transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{q.title}</p>
+                      <p className="text-xs text-gray-400">{q.quoteNumber}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold text-gray-900">
+                        ₹{q.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                      </span>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                        q.status === "ACCEPTED" ? "bg-green-100 text-green-700"
+                        : q.status === "DECLINED" ? "bg-red-100 text-red-700"
+                        : q.status === "SENT" ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-600"
+                      }`}>
+                        {q.status}
+                      </span>
+                    </div>
+                  </Link>
                 ))
               )}
             </div>

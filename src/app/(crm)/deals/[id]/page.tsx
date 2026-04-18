@@ -1,5 +1,6 @@
 import { getDealById, getPipelines } from "@/lib/actions/deals";
 import { getSequences } from "@/lib/actions/marketing";
+import { getQuotes } from "@/lib/actions/quotes";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -27,17 +28,21 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
   const { id } = await params;
   const { tab = "overview" } = await searchParams;
 
-  const [deal, pipelines, sequences] = await Promise.all([
+  const [deal, pipelines, sequences, quotesResult] = await Promise.all([
     getDealById(id),
     getPipelines(),
     getSequences(),
+    getQuotes({ dealId: id }),
   ]);
   if (!deal) notFound();
 
   const activeSequences = sequences.filter((s) => s.isActive);
 
+  const dealQuotes = quotesResult.quotes;
+
   const tabs = [
     { id: "overview", label: "Overview" },
+    { id: "quotes", label: `Quotes (${dealQuotes.length})` },
     { id: "tasks", label: `Tasks (${deal.tasks.length})` },
     { id: "itineraries", label: `Itineraries (${deal.itineraries.length})` },
     { id: "bookings", label: `Bookings (${deal.bookings.length})` },
@@ -190,6 +195,13 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
 
         {/* Action buttons */}
         <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-3 flex-wrap">
+          <Link
+            href={`/quotes?dealId=${deal.id}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            New Quote
+          </Link>
           {deal.contact && activeSequences.length > 0 && (
             <EnrollSequenceButton contactId={deal.contact.id} sequences={activeSequences} />
           )}
@@ -421,6 +433,52 @@ export default async function DealDetailPage({ params, searchParams }: DealDetai
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Quotes */}
+          {tab === "quotes" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700">Quotes / Proposals</h3>
+                <Link
+                  href={`/quotes?dealId=${deal.id}`}
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                  View all quotes →
+                </Link>
+              </div>
+              {dealQuotes.length === 0 ? (
+                <p className="text-sm text-gray-400 py-4">No quotes yet for this deal.</p>
+              ) : (
+                <div className="space-y-2">
+                  {dealQuotes.map((q) => (
+                    <Link
+                      key={q.id}
+                      href={`/quotes/${q.id}`}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-indigo-50 transition-colors"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{q.title}</p>
+                        <p className="text-xs text-gray-400">{q.quoteNumber}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-gray-900">
+                          ₹{q.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                        </span>
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                          q.status === "ACCEPTED" ? "bg-green-100 text-green-700"
+                          : q.status === "DECLINED" ? "bg-red-100 text-red-700"
+                          : q.status === "SENT" ? "bg-blue-100 text-blue-700"
+                          : "bg-gray-100 text-gray-600"
+                        }`}>
+                          {q.status}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

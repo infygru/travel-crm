@@ -465,3 +465,68 @@ async function recalculateItineraryTotal(itineraryId: string) {
     data: { totalCost: agg._sum.totalCost ?? 0 },
   });
 }
+
+export async function convertItineraryToBooking(itineraryId: string) {
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+
+  const itinerary = await db.itinerary.findUnique({
+    where: { id: itineraryId },
+    select: {
+      id: true,
+      title: true,
+      startDate: true,
+      endDate: true,
+      totalCost: true,
+      currency: true,
+      contactId: true,
+      dealId: true,
+      deal: { select: { packageId: true } },
+    },
+  });
+  if (!itinerary) throw new Error("Itinerary not found");
+
+  const booking = await db.booking.create({
+    data: {
+      startDate: itinerary.startDate ?? new Date(),
+      endDate: itinerary.endDate ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      totalAmount: itinerary.totalCost,
+      currency: itinerary.currency,
+      contactId: itinerary.contactId ?? undefined,
+      dealId: itinerary.dealId ?? undefined,
+      packageId: itinerary.deal?.packageId ?? undefined,
+      agentId: session.user.id,
+      internalNotes: `Created from itinerary: ${itinerary.title}`,
+    },
+  });
+
+  // Mark itinerary as BOOKED
+  await db.itinerary.update({
+    where: { id: itineraryId },
+    data: { status: "BOOKED" as ItineraryStatus },
+  });
+
+  // Close deal as WON if linked
+  if (itinerary.dealId) {
+    await db.deal.update({
+      where: { id: itinerary.dealId },
+      data: { status: "WON", actualClose: new Date() },
+    });
+    revalidatePath(`/deals/${itinerary.dealId}`);
+  }
+
+  await db.activity.create({
+    data: {
+      type: "BOOKING_CREATED",
+      title: `Booking created from itinerary "${itinerary.title}"`,
+      bookingId: booking.id,
+      contactId: itinerary.contactId ?? undefined,
+      userId: session.user.id,
+    },
+  });
+
+  revalidatePath(`/itineraries/${itineraryId}`);
+  revalidatePath("/bookings");
+  return booking;
+}
+

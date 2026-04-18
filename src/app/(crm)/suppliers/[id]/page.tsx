@@ -10,7 +10,6 @@ import {
   MapPin,
   Star,
   CreditCard,
-  Plus,
 } from "lucide-react";
 import {
   SUPPLIER_CATEGORY_LABELS,
@@ -161,7 +160,7 @@ export default async function SupplierDetailPage({
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-gray-700">Payment Ledger</h2>
-              <SupplierAddPaymentButton supplierId={supplier.id} />
+              <p className="text-xs text-gray-400">Use &ldquo;Add Payment&rdquo; button above ↑</p>
             </div>
 
             {supplier.payments.length === 0 ? (
@@ -267,15 +266,3 @@ export default async function SupplierDetailPage({
   );
 }
 
-function SupplierAddPaymentButton({ supplierId }: { supplierId: string }) {
-  return (
-    <button
-      disabled
-      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors disabled:opacity-50"
-      title="Use the Add Payment button in actions"
-    >
-      <Plus className="w-3.5 h-3.5" />
-      Add Payment
-    </button>
-  );
-}

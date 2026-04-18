@@ -324,6 +324,22 @@ export async function addPayment(data: {
       where: { id: data.bookingId },
       data: { paidAmount: totalPaid, paymentStatus: paymentStatus as never },
     });
+
+    // Keep contact.totalSpent in sync
+    if (booking.contactId) {
+      const contactBookings = await db.booking.findMany({
+        where: { contactId: booking.contactId },
+        select: { id: true, paidAmount: true },
+      });
+      const newTotal = contactBookings.reduce(
+        (sum, b) => sum + (b.id === data.bookingId ? totalPaid : b.paidAmount),
+        0
+      );
+      await db.contact.update({
+        where: { id: booking.contactId },
+        data: { totalSpent: newTotal },
+      });
+    }
   }
 
   await db.activity.create({

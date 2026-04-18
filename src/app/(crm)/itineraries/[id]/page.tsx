@@ -5,6 +5,7 @@ import { ArrowLeft, Download } from "lucide-react";
 import { ITINERARY_STATUS_COLORS } from "@/lib/constants";
 import { format } from "date-fns";
 import { ItineraryBuilder } from "./itinerary-builder";
+import { ConvertToBookingButton } from "./itinerary-actions";
 
 interface ItineraryDetailPageProps {
   params: Promise<{ id: string }>;
@@ -53,6 +54,11 @@ export default async function ItineraryDetailPage({ params }: ItineraryDetailPag
                 ₹{itinerary.totalCost.toLocaleString("en-IN")}
               </p>
             </div>
+            <ConvertToBookingButton
+              itineraryId={itinerary.id}
+              status={itinerary.status}
+              totalCost={itinerary.totalCost}
+            />
             <a
               href={`/api/pdf/itinerary/${itinerary.id}`}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"

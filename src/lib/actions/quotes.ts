@@ -261,7 +261,7 @@ export async function sendQuote(quoteId: string) {
 export async function acceptQuote(token: string) {
   const quote = await db.quote.findUnique({
     where: { shareToken: token },
-    select: { id: true, status: true },
+    select: { id: true, status: true, contactId: true, dealId: true },
   });
   if (!quote) throw new Error("Quote not found");
   if (quote.status !== "SENT") throw new Error("Quote cannot be accepted in its current state");
@@ -271,7 +271,70 @@ export async function acceptQuote(token: string) {
     data: { status: "ACCEPTED", acceptedAt: new Date() },
   });
 
+  // Close deal as WON
+  if (quote.dealId) {
+    await db.deal.update({
+      where: { id: quote.dealId },
+      data: { status: "WON", actualClose: new Date() },
+    });
+    revalidatePath(`/deals/${quote.dealId}`);
+  }
+
+  // Move contact to CONVERTED
+  if (quote.contactId) {
+    await db.contact.update({
+      where: { id: quote.contactId },
+      data: { leadStatus: "CONVERTED" },
+    });
+    revalidatePath(`/contacts/${quote.contactId}`);
+  }
+
   revalidatePath(`/quotes/${quote.id}`);
+  revalidatePath("/quotes");
+}
+
+export async function createBookingFromQuote(quoteId: string) {
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+
+  const quote = await db.quote.findUnique({
+    where: { id: quoteId },
+    select: {
+      id: true,
+      status: true,
+      totalAmount: true,
+      currency: true,
+      contactId: true,
+      dealId: true,
+      deal: { select: { packageId: true } },
+    },
+  });
+  if (!quote) throw new Error("Quote not found");
+  if (quote.status !== "ACCEPTED") throw new Error("Only accepted quotes can be converted to bookings");
+
+  const booking = await db.booking.create({
+    data: {
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // placeholder 7 days
+      totalAmount: quote.totalAmount,
+      currency: quote.currency,
+      contactId: quote.contactId ?? undefined,
+      dealId: quote.dealId ?? undefined,
+      packageId: quote.deal?.packageId ?? undefined,
+      agentId: session.user.id,
+      internalNotes: `Created from Quote ${quoteId}`,
+    },
+  });
+
+  // Mark quote as converted
+  await db.quote.update({
+    where: { id: quoteId },
+    data: { status: "CONVERTED" },
+  });
+
+  revalidatePath(`/quotes/${quoteId}`);
+  revalidatePath("/bookings");
+  return booking;
 }
 
 export async function declineQuote(token: string, reason?: string) {
