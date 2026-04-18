@@ -17,6 +17,10 @@ import {
   Clock,
   CheckCircle2,
   IndianRupee,
+  DollarSign,
+  Euro,
+  PoundSterling,
+  BadgeDollarSign,
   TrendingUp,
   Users,
   CalendarCheck,
@@ -27,7 +31,18 @@ import {
   CreditCard,
   FileWarning,
   UserPlus,
+  type LucideIcon,
 } from "lucide-react";
+
+const CURRENCY_ICONS: Record<string, LucideIcon> = {
+  INR: IndianRupee,
+  USD: DollarSign,
+  EUR: Euro,
+  GBP: PoundSterling,
+};
+function getCurrencyIcon(currency: string): LucideIcon {
+  return CURRENCY_ICONS[currency] ?? BadgeDollarSign;
+}
 import { BOOKING_STATUS_COLORS, PRIORITY_COLORS } from "@/lib/constants";
 import { format, differenceInDays } from "date-fns";
 import { RevenueChart } from "@/components/charts/revenue-chart";
@@ -165,7 +180,7 @@ export default async function DashboardPage() {
             change: stats.prevMonthRevenue > 0
               ? ((stats.totalRevenue - stats.prevMonthRevenue) / stats.prevMonthRevenue) * 100
               : null,
-            icon: IndianRupee,
+            icon: getCurrencyIcon(settings.currency),
             iconGradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
             cardAccent: "from-emerald-50/80 to-white",
             borderColor: "border-emerald-100",
