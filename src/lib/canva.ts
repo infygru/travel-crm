@@ -9,7 +9,7 @@ export async function getCanvaAuthUrl(state: string): Promise<string> {
     scope: "design:content:read design:content:write design:meta:read",
     state,
   })
-  return `https://www.canva.com/api/oauth/authorize?${params.toString()}`
+  return `https://www.canva.com/oauth/authorize?${params.toString()}`
 }
 
 export async function exchangeCanvaCode(code: string): Promise<{ access_token: string; refresh_token: string }> {
