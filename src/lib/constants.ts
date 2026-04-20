@@ -16,6 +16,7 @@ import {
   Building2,
   Plane,
   Info,
+  Inbox,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -52,6 +53,7 @@ export const NAV_GROUPS = [
     label: "Operations",
     color: "amber" as const,
     items: [
+      { title: "Inbox", href: "/inbox", icon: Inbox },
       { title: "Tasks", href: "/tasks", icon: ListTodo },
       { title: "Support", href: "/tickets", icon: Headphones },
       { title: "Reports", href: "/reports", icon: BarChart3 },

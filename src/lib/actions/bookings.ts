@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { sendBookingConfirmation, sendBookingStatusUpdate } from "@/lib/email";
 import { triggerAutomations } from "@/lib/automations";
+import { nanoid } from "nanoid";
 
 export async function getBookings(params?: {
   search?: string;
@@ -648,4 +649,24 @@ export async function resendBookingConfirmation(bookingId: string) {
   });
 
   revalidatePath(`/bookings/${bookingId}`);
+}
+
+export async function generateBookingShareLink(bookingId: string): Promise<string> {
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+
+  const token = nanoid(16);
+
+  await db.booking.update({
+    where: { id: bookingId },
+    data: {
+      shareToken: token,
+      sharedAt: new Date(),
+    },
+  });
+
+  revalidatePath(`/bookings/${bookingId}`);
+
+  const baseUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
+  return `${baseUrl}/b/${token}`;
 }

@@ -49,8 +49,11 @@ model User {
   statusChanges       TicketStatusHistory[] @relation("StatusChanger")
   escalatedByMe       TicketEscalation[]    @relation("EscalatedBy")
   escalatedToMe       TicketEscalation[]    @relation("EscalatedTo")
+  canvaToken          String?
   canvaDesigns        CanvaDesign[]         @relation("CanvaDesignCreator")
   importLogs          ImportLog[]           @relation("ImportLogCreator")
+  conversations       Conversation[]        @relation("ConversationAssignee")
+  sentMessages        ConversationMessage[] @relation("MessageSender")
 
   @@map("users")
 }
@@ -183,6 +186,7 @@ model Contact {
   tickets             SupportTicket[]
   canvaDesigns        CanvaDesign[]
   quotes              Quote[]
+  conversations       Conversation[]
 
   @@map("contacts")
 }
@@ -398,6 +402,9 @@ model Booking {
   deal      Deal?          @relation(fields: [dealId], references: [id])
   agentId   String?
   agent     User?          @relation("BookingAgent", fields: [agentId], references: [id])
+
+  shareToken  String?  @unique
+  sharedAt    DateTime?
 
   passengers       Passenger[]
   payments         Payment[]
@@ -1488,8 +1495,9 @@ model CompanySettings {
   pan            String?
   invoicePrefix  String   @default("INV")
   invoiceFooter  String?
-  currency       String   @default("INR")
-  updatedAt      DateTime @updatedAt
+  currency           String   @default("INR")
+  canvaTemplateId    String?
+  updatedAt          DateTime @updatedAt
 
   @@map("company_settings")
 }
@@ -1507,4 +1515,58 @@ model ScheduledJobLog {
   details   Json?
 
   @@map("scheduled_job_logs")
+}
+
+// ─────────────────────────────────────────────
+// OMNICHANNEL INBOX
+// ─────────────────────────────────────────────
+
+model Conversation {
+  id            String              @id @default(cuid())
+  channel       MessageChannel
+  contactId     String
+  contact       Contact             @relation(fields: [contactId], references: [id])
+  externalId    String?
+  status        ConversationStatus  @default(OPEN)
+  lastMessageAt DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  messages      ConversationMessage[]
+  assignedToId  String?
+  assignedTo    User?               @relation("ConversationAssignee", fields: [assignedToId], references: [id])
+
+  @@map("conversations")
+}
+
+model ConversationMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  direction      MessageDirection
+  body           String           @db.Text
+  status         MessageStatus    @default(SENT)
+  twilioSid      String?
+  sentAt         DateTime         @default(now())
+  sentById       String?
+  sentBy         User?            @relation("MessageSender", fields: [sentById], references: [id])
+
+  @@map("conversation_messages")
+}
+
+enum ConversationStatus {
+  OPEN
+  RESOLVED
+  PENDING
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
 }

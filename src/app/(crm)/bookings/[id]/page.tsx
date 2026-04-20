@@ -27,6 +27,7 @@ import {
 } from "./booking-actions";
 import { BulkPassengerEntry } from "@/components/bookings/bulk-passenger-entry";
 import { PassengerCostBreakdown } from "@/components/bookings/passenger-cost-breakdown";
+import { ShareBookingButton } from "@/components/bookings/share-booking-button";
 
 interface BookingDetailPageProps {
   params: Promise<{ id: string }>;
@@ -127,6 +128,10 @@ export default async function BookingDetailPage({ params, searchParams }: Bookin
               contactEmail={booking.contact.email}
             />
           )}
+          <ShareBookingButton
+            bookingId={id}
+            existingToken={(booking as { shareToken?: string | null }).shareToken}
+          />
           <a
             href={`/api/pdf/booking/${id}`}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"

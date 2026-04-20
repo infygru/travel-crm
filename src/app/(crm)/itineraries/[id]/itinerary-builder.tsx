@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   addDayPlan,
@@ -11,12 +11,13 @@ import {
   shareItinerary,
   importDaysFromPackage,
 } from "@/lib/actions/itineraries";
-import { createDesignViaCanva } from "@/lib/actions/canva";
+import { generatePosterFromItinerary } from "@/lib/actions/canva";
+import { enhanceDayDescription, autoWriteDay, enhanceItemDescription } from "@/lib/actions/ai-itinerary";
 import { toast } from "sonner";
 import { useFmt } from "@/components/currency-provider";
 import {
   Plus, Trash2, Share2, Plane, Hotel, Zap, Car, Utensils, Sunrise, Tag,
-  Palette, ExternalLink, Pencil, Check, X, Printer, Mail, Package,
+  Palette, ExternalLink, Pencil, Check, X, Printer, Mail, Package, Sparkles,
 } from "lucide-react";
 
 type ItineraryItem = {
@@ -110,6 +111,14 @@ export function ItineraryBuilder({ itinerary, contactEmail, contactName }: Itine
   const [editingDayId, setEditingDayId] = useState<string | null>(null);
   const [dayEditForm, setDayEditForm] = useState({ title: "", location: "", date: "", description: "" });
   const [savingDay, setSavingDay] = useState(false);
+
+  // AI state
+  const [aiPending, startAiTransition] = useTransition();
+  const [enhancingDayId, setEnhancingDayId] = useState<string | null>(null);
+  const [autoWritingDayId, setAutoWritingDayId] = useState<string | null>(null);
+  const [autoWritePrompt, setAutoWritePrompt] = useState("");
+  const [showAutoWriteDialogFor, setShowAutoWriteDialogFor] = useState<string | null>(null);
+  const [enhancingItem, setEnhancingItem] = useState(false);
 
   const appUrl = typeof window !== "undefined" ? window.location.origin : "";
   const publicUrl = itinerary.shareToken ? `${appUrl}/itinerary/${itinerary.shareToken}` : null;
@@ -239,22 +248,92 @@ export function ItineraryBuilder({ itinerary, contactEmail, contactName }: Itine
     }
   }
 
+  function handleEnhanceDayDescription(day: DayPlan) {
+    setEnhancingDayId(day.id);
+    startAiTransition(async () => {
+      try {
+        const enhanced = await enhanceDayDescription({
+          title: dayEditForm.title || day.title || undefined,
+          location: dayEditForm.location || day.location || undefined,
+          description: dayEditForm.description || day.description || undefined,
+          items: day.items.map((i) => ({ type: i.type, title: i.title })),
+        });
+        setDayEditForm((f) => ({ ...f, description: enhanced }));
+        toast.success("Description enhanced!");
+      } catch {
+        toast.error("AI enhance failed");
+      } finally {
+        setEnhancingDayId(null);
+      }
+    });
+  }
+
+  function handleAutoWriteDay(day: DayPlan) {
+    setShowAutoWriteDialogFor(day.id);
+    setAutoWritePrompt("");
+  }
+
+  function confirmAutoWriteDay(day: DayPlan) {
+    setAutoWritingDayId(day.id);
+    setShowAutoWriteDialogFor(null);
+    startAiTransition(async () => {
+      try {
+        const result = await autoWriteDay({
+          destination: day.location || undefined,
+          theme: itinerary.deal?.title || undefined,
+          dayNumber: day.dayNumber,
+          prompt: autoWritePrompt || undefined,
+        });
+        setDayEditForm({
+          title: result.title,
+          description: result.description,
+          location: dayEditForm.location || day.location || "",
+          date: dayEditForm.date || (day.date ? new Date(day.date).toISOString().split("T")[0] : ""),
+        });
+        if (!editingDayId) {
+          setEditingDayId(day.id);
+        }
+        toast.success("Day auto-written! Review and save.");
+      } catch {
+        toast.error("AI auto-write failed");
+      } finally {
+        setAutoWritingDayId(null);
+      }
+    });
+  }
+
+  function handleEnhanceItemDescription() {
+    setEnhancingItem(true);
+    startAiTransition(async () => {
+      try {
+        const enhanced = await enhanceItemDescription({
+          type: itemForm.type,
+          title: itemForm.title,
+          location: itemForm.location || undefined,
+          description: itemForm.description || undefined,
+        });
+        setItemForm((f) => ({ ...f, description: enhanced }));
+        toast.success("Description enhanced!");
+      } catch {
+        toast.error("AI enhance failed");
+      } finally {
+        setEnhancingItem(false);
+      }
+    });
+  }
+
   async function handleCreatePoster() {
     setCreatingPoster(true);
     try {
-      const result = await createDesignViaCanva({
-        title: `${itinerary.title} — Poster`,
-        designType: "POSTER",
-        itineraryId: itinerary.id,
-      });
+      const result = await generatePosterFromItinerary(itinerary.id);
       if (result.editUrl) {
         toast.success("Poster created! Opening Canva editor...");
         window.open(result.editUrl, "_blank", "noopener,noreferrer");
       } else {
         toast.success("Poster saved. Connect Canva to edit designs.");
       }
-    } catch {
-      toast.error("Failed to create poster");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to create poster");
     } finally {
       setCreatingPoster(false);
     }
@@ -433,15 +512,27 @@ export function ItineraryBuilder({ itinerary, contactEmail, contactName }: Itine
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
-                    <input
-                      value={dayEditForm.description}
-                      onChange={(e) => setDayEditForm({ ...dayEditForm, description: e.target.value })}
-                      placeholder="Brief overview of the day..."
-                      className={inputCls}
-                    />
+                    <div className="flex gap-1">
+                      <input
+                        value={dayEditForm.description}
+                        onChange={(e) => setDayEditForm({ ...dayEditForm, description: e.target.value })}
+                        placeholder="Brief overview of the day..."
+                        className={`${inputCls} flex-1`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleEnhanceDayDescription(day)}
+                        disabled={aiPending && enhancingDayId === day.id}
+                        title="AI Enhance"
+                        className="flex items-center gap-1 px-2 py-1.5 border border-purple-200 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-100 disabled:opacity-50 flex-shrink-0"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        {aiPending && enhancingDayId === day.id ? "..." : "Enhance"}
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <button
                     onClick={() => handleSaveDayEdit(day.id)}
                     disabled={savingDay}
@@ -451,6 +542,45 @@ export function ItineraryBuilder({ itinerary, contactEmail, contactName }: Itine
                   </button>
                   <button
                     onClick={() => setEditingDayId(null)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium hover:bg-gray-50"
+                  >
+                    <X className="w-3.5 h-3.5" /> Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAutoWriteDay(day)}
+                    disabled={aiPending && autoWritingDayId === day.id}
+                    className="flex items-center gap-1.5 px-3 py-1.5 border border-purple-200 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-100 disabled:opacity-50 ml-auto"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    {aiPending && autoWritingDayId === day.id ? "Writing..." : "Auto-write Day"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Auto-write dialog */}
+            {showAutoWriteDialogFor === day.id && (
+              <div className="px-5 py-4 bg-purple-50 border-b border-purple-100 space-y-3">
+                <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider">Auto-write Day {day.dayNumber}</p>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Describe what you want for this day (optional)</label>
+                  <input
+                    value={autoWritePrompt}
+                    onChange={(e) => setAutoWritePrompt(e.target.value)}
+                    placeholder="e.g. Romantic sunset dinner, temple visits in the morning..."
+                    className={inputCls}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => confirmAutoWriteDay(day)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> Generate
+                  </button>
+                  <button
+                    onClick={() => setShowAutoWriteDialogFor(null)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium hover:bg-gray-50"
                   >
                     <X className="w-3.5 h-3.5" /> Cancel
@@ -621,13 +751,25 @@ export function ItineraryBuilder({ itinerary, contactEmail, contactName }: Itine
 
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Description / Notes</label>
-                  <textarea
-                    value={itemForm.description}
-                    onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
-                    rows={2}
-                    className={`${inputCls} resize-none`}
-                    placeholder="Any additional details..."
-                  />
+                  <div className="flex gap-1 items-start">
+                    <textarea
+                      value={itemForm.description}
+                      onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
+                      rows={2}
+                      className={`${inputCls} resize-none flex-1`}
+                      placeholder="Any additional details..."
+                    />
+                    <button
+                      type="button"
+                      onClick={handleEnhanceItemDescription}
+                      disabled={!itemForm.title || (aiPending && enhancingItem)}
+                      title="AI Enhance description"
+                      className="flex items-center gap-1 px-2 py-1.5 border border-purple-200 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-100 disabled:opacity-50 flex-shrink-0"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      {aiPending && enhancingItem ? "..." : "Enhance"}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between">
