@@ -18,6 +18,7 @@ import {
   Info,
   Inbox,
   Share2,
+  Stamp,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -39,6 +40,7 @@ export const NAV_GROUPS = [
       { title: "Packages", href: "/packages", icon: Package },
       { title: "Itineraries", href: "/itineraries", icon: Route },
       { title: "Bookings", href: "/bookings", icon: Plane },
+      { title: "Visa Tracker", href: "/visa", icon: Stamp },
       { title: "Suppliers", href: "/suppliers", icon: Warehouse },
     ],
   },
@@ -189,6 +191,42 @@ export const SOCIAL_POST_STATUS_COLORS: Record<string, string> = {
   FAILED: "bg-red-100 text-red-700",
   PARTIALLY_PUBLISHED: "bg-orange-100 text-orange-700",
 };
+
+export const VISA_STAGE_COLORS: Record<string, string> = {
+  INITIATED: "bg-gray-100 text-gray-700",
+  DOCUMENTS_PENDING: "bg-amber-100 text-amber-700",
+  DOCUMENTS_RECEIVED: "bg-blue-100 text-blue-700",
+  SUBMITTED: "bg-indigo-100 text-indigo-700",
+  PROCESSING: "bg-violet-100 text-violet-700",
+  APPOINTMENT_BOOKED: "bg-cyan-100 text-cyan-700",
+  APPROVED: "bg-green-100 text-green-700",
+  REJECTED: "bg-red-100 text-red-700",
+  CANCELLED: "bg-gray-100 text-gray-500",
+};
+
+export const VISA_TYPE_LABELS: Record<string, string> = {
+  SCHENGEN: "Schengen",
+  UK: "UK",
+  USA: "USA",
+  CANADA: "Canada",
+  AUSTRALIA: "Australia",
+  DUBAI_UAE: "Dubai / UAE",
+  SINGAPORE: "Singapore",
+  JAPAN: "Japan",
+  CHINA: "China",
+  NEW_ZEALAND: "New Zealand",
+  OTHER: "Other",
+};
+
+export const VISA_STAGE_ORDER = [
+  "INITIATED",
+  "DOCUMENTS_PENDING",
+  "DOCUMENTS_RECEIVED",
+  "SUBMITTED",
+  "PROCESSING",
+  "APPOINTMENT_BOOKED",
+  "APPROVED",
+];
 
 export const LEAD_SOURCES = [
   "WEBSITE",

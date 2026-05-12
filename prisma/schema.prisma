@@ -34,6 +34,7 @@ model User {
   activities       Activity[]
   notes            Note[]
 
+  visaApplications    VisaApplication[]     @relation("VisaAgent")
   createdTemplates    MessageTemplate[]     @relation("TemplateCreator")
   createdSegments     ContactSegment[]      @relation("SegmentCreator")
   createdCampaigns    Campaign[]            @relation("CampaignCreator")
@@ -176,6 +177,7 @@ model Contact {
   noteRels   Note[]
   activities Activity[]
   emails     EmailLog[]
+  visaApplications VisaApplication[]
 
   campaignSends       CampaignSend[]
   sequenceEnrollments SequenceEnrollment[]
@@ -429,6 +431,7 @@ model Booking {
   activities       Activity[]
   tickets          SupportTicket[]
   supplierPayments SupplierPayment[]
+  visaApplications VisaApplication[]
 
   @@index([contactId])
   @@index([agentId])
@@ -1787,4 +1790,118 @@ model SocialPostTarget {
   @@index([accountId])
   @@index([status])
   @@map("social_post_targets")
+}
+
+// ─────────────────────────────────────────────
+// VISA TRACKER
+// ─────────────────────────────────────────────
+
+enum VisaType {
+  SCHENGEN
+  UK
+  USA
+  CANADA
+  AUSTRALIA
+  DUBAI_UAE
+  SINGAPORE
+  JAPAN
+  CHINA
+  NEW_ZEALAND
+  OTHER
+}
+
+enum VisaStage {
+  INITIATED
+  DOCUMENTS_PENDING
+  DOCUMENTS_RECEIVED
+  SUBMITTED
+  PROCESSING
+  APPOINTMENT_BOOKED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum VisaDocStatus {
+  PENDING
+  RECEIVED
+  VERIFIED
+  REJECTED
+}
+
+model VisaApplication {
+  id             String    @id @default(cuid())
+  applicationRef String    @unique @default(cuid())
+
+  contactId String
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  agentId String?
+  agent   User?   @relation("VisaAgent", fields: [agentId], references: [id], onDelete: SetNull)
+
+  visaType           VisaType
+  destinationCountry String
+  embassyCenter      String?
+  stage              VisaStage @default(INITIATED)
+  priority           Priority  @default(MEDIUM)
+
+  travelDate      DateTime?
+  applicationDate DateTime  @default(now())
+  submittedAt     DateTime?
+  appointmentDate DateTime?
+  appointmentTime String?
+  decisionDate    DateTime?
+
+  trackingNumber  String?
+  notes           String?
+  rejectionReason String?
+
+  lastReminderAt DateTime?
+  alertSentCount Int       @default(0)
+
+  documents VisaDocument[]
+  reminders VisaReminder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([contactId])
+  @@index([bookingId])
+  @@index([stage])
+  @@index([travelDate])
+  @@index([visaType])
+  @@map("visa_applications")
+}
+
+model VisaDocument {
+  id     String          @id @default(cuid())
+  visaId String
+  visa   VisaApplication @relation(fields: [visaId], references: [id], onDelete: Cascade)
+
+  name       String
+  status     VisaDocStatus @default(PENDING)
+  notes      String?
+  receivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([visaId])
+  @@map("visa_documents")
+}
+
+model VisaReminder {
+  id     String          @id @default(cuid())
+  visaId String
+  visa   VisaApplication @relation(fields: [visaId], references: [id], onDelete: Cascade)
+
+  type    String
+  channel String   @default("email")
+  sentAt  DateTime @default(now())
+
+  @@index([visaId])
+  @@map("visa_reminders")
 }
