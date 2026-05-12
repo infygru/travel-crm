@@ -1,57 +1,57 @@
-import twilio from "twilio";
-import crypto from "crypto";
+import twilio from "twilio"
+import crypto from "crypto"
+import { getIntegrationConfig } from "@/lib/config"
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID ?? "";
-const authToken = process.env.TWILIO_AUTH_TOKEN ?? "";
-const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER ?? "whatsapp:+14155238886";
-const smsNumber = process.env.TWILIO_SMS_NUMBER ?? "";
-
-export function getTwilioClient() {
-  if (!accountSid || !authToken) {
-    throw new Error("Twilio credentials not configured");
+export async function getTwilioClient() {
+  const cfg = await getIntegrationConfig()
+  if (!cfg.twilioAccountSid || !cfg.twilioAuthToken) {
+    throw new Error("Twilio credentials not configured. Go to Settings → Integrations to add them.")
   }
-  return twilio(accountSid, authToken);
+  return twilio(cfg.twilioAccountSid, cfg.twilioAuthToken)
 }
 
 export async function sendWhatsApp(to: string, body: string): Promise<string> {
-  const client = getTwilioClient();
-  const toNumber = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
+  const cfg = await getIntegrationConfig()
+  const client = await getTwilioClient()
+  const toNumber = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`
   const message = await client.messages.create({
-    from: whatsappNumber,
+    from: cfg.twilioWhatsappNumber,
     to: toNumber,
     body,
-  });
-  return message.sid;
+  })
+  return message.sid
 }
 
 export async function sendSMS(to: string, body: string): Promise<string> {
-  const client = getTwilioClient();
+  const cfg = await getIntegrationConfig()
+  if (!cfg.twilioSmsNumber) throw new Error("Twilio SMS number not configured.")
+  const client = await getTwilioClient()
   const message = await client.messages.create({
-    from: smsNumber,
+    from: cfg.twilioSmsNumber,
     to,
     body,
-  });
-  return message.sid;
+  })
+  return message.sid
 }
 
-export function validateTwilioSignature(
+export async function validateTwilioSignature(
   url: string,
   params: Record<string, string>,
   signature: string
-): boolean {
-  if (!authToken) return false;
+): Promise<boolean> {
+  const cfg = await getIntegrationConfig()
+  if (!cfg.twilioAuthToken) return false
 
-  // Sort params alphabetically and concatenate to URL
-  const sortedKeys = Object.keys(params).sort();
-  let dataStr = url;
+  const sortedKeys = Object.keys(params).sort()
+  let dataStr = url
   for (const key of sortedKeys) {
-    dataStr += key + params[key];
+    dataStr += key + params[key]
   }
 
   const expected = crypto
-    .createHmac("sha1", authToken)
+    .createHmac("sha1", cfg.twilioAuthToken)
     .update(dataStr)
-    .digest("base64");
+    .digest("base64")
 
-  return expected === signature;
+  return expected === signature
 }

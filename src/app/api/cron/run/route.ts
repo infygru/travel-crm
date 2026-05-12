@@ -5,12 +5,15 @@ import { runAllJobs } from "@/lib/jobs";
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
 
-  // If CRON_SECRET is set, require it
-  if (cronSecret) {
-    const provided = request.headers.get("x-cron-secret");
-    if (provided !== cronSecret) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
-    }
+  // CRON_SECRET is always required — fail-closed to prevent unauthorized job triggering
+  if (!cronSecret) {
+    console.error("[cron] CRON_SECRET env var is not set — refusing to run jobs for security");
+    return Response.json({ error: "Cron not configured. Set CRON_SECRET environment variable." }, { status: 503 });
+  }
+
+  const provided = request.headers.get("x-cron-secret") ?? request.headers.get("authorization")?.replace("Bearer ", "");
+  if (provided !== cronSecret) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {

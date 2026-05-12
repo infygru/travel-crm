@@ -17,6 +17,7 @@ import {
   Plane,
   Info,
   Inbox,
+  Share2,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -47,6 +48,7 @@ export const NAV_GROUPS = [
     items: [
       { title: "Campaigns", href: "/marketing", icon: Megaphone },
       { title: "Design Studio", href: "/posters", icon: Palette },
+      { title: "Social Media", href: "/social", icon: Share2 },
     ],
   },
   {
@@ -177,6 +179,15 @@ export const SUPPLIER_CATEGORY_LABELS: Record<string, string> = {
   INSURANCE: "Insurance",
   CRUISE: "Cruise",
   OTHER: "Other",
+};
+
+export const SOCIAL_POST_STATUS_COLORS: Record<string, string> = {
+  DRAFT: "bg-gray-100 text-gray-600",
+  SCHEDULED: "bg-blue-100 text-blue-700",
+  PUBLISHING: "bg-yellow-100 text-yellow-700",
+  PUBLISHED: "bg-green-100 text-green-700",
+  FAILED: "bg-red-100 text-red-700",
+  PARTIALLY_PUBLISHED: "bg-orange-100 text-orange-700",
 };
 
 export const LEAD_SOURCES = [

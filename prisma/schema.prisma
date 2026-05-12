@@ -54,6 +54,8 @@ model User {
   importLogs          ImportLog[]           @relation("ImportLogCreator")
   conversations       Conversation[]        @relation("ConversationAssignee")
   sentMessages        ConversationMessage[] @relation("MessageSender")
+  socialAccounts      SocialAccount[]       @relation("SocialAccountCreator")
+  socialPosts         SocialPost[]          @relation("SocialPostCreator")
 
   @@map("users")
 }
@@ -188,6 +190,11 @@ model Contact {
   quotes              Quote[]
   conversations       Conversation[]
 
+  @@index([ownerId])
+  @@index([companyId])
+  @@index([leadStatus])
+  @@index([leadSource])
+  @@index([createdAt])
   @@map("contacts")
 }
 
@@ -249,6 +256,7 @@ model PipelineStage {
   pipeline    Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
   deals       Deal[]
 
+  @@index([pipelineId])
   @@map("pipeline_stages")
 }
 
@@ -289,6 +297,13 @@ model Deal {
   tickets     SupportTicket[]
   quotes      Quote[]
 
+  @@index([contactId])
+  @@index([companyId])
+  @@index([ownerId])
+  @@index([pipelineId])
+  @@index([stageId])
+  @@index([status])
+  @@index([createdAt])
   @@map("deals")
 }
 
@@ -415,6 +430,12 @@ model Booking {
   tickets          SupportTicket[]
   supplierPayments SupplierPayment[]
 
+  @@index([contactId])
+  @@index([agentId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([startDate])
+  @@index([createdAt])
   @@map("bookings")
 }
 
@@ -457,6 +478,7 @@ model Passenger {
   specialNeeds   String?
   individualCost Float         @default(0)
 
+  @@index([bookingId])
   @@map("passengers")
 }
 
@@ -480,6 +502,7 @@ model Payment {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
+  @@index([bookingId])
   @@map("payments")
 }
 
@@ -547,6 +570,12 @@ model Task {
   bookingId  String?
   booking    Booking? @relation(fields: [bookingId], references: [id])
 
+  @@index([assigneeId])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([bookingId])
+  @@index([dueDate])
+  @@index([status])
   @@map("tasks")
 }
 
@@ -586,6 +615,12 @@ model Activity {
   bookingId String?
   booking   Booking? @relation(fields: [bookingId], references: [id])
 
+  @@index([contactId])
+  @@index([dealId])
+  @@index([bookingId])
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
   @@map("activities")
 }
 
@@ -639,6 +674,10 @@ model Note {
   bookingId String?
   booking   Booking? @relation(fields: [bookingId], references: [id])
 
+  @@index([contactId])
+  @@index([dealId])
+  @@index([companyId])
+  @@index([createdAt])
   @@map("notes")
 }
 
@@ -656,6 +695,8 @@ model EmailLog {
   contactId String?
   contact   Contact? @relation(fields: [contactId], references: [id])
 
+  @@index([contactId])
+  @@index([sentAt])
   @@map("email_logs")
 }
 
@@ -778,6 +819,9 @@ model CampaignSend {
   contact        Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
 
   @@unique([campaignId, contactId])
+  @@index([contactId])
+  @@index([campaignId])
+  @@index([status])
   @@map("campaign_sends")
 }
 
@@ -850,6 +894,9 @@ model SequenceEnrollment {
   nextSendAt  DateTime?
 
   @@unique([sequenceId, contactId])
+  @@index([contactId])
+  @@index([sequenceId])
+  @@index([status])
   @@map("sequence_enrollments")
 }
 
@@ -1206,6 +1253,10 @@ model SupportTicket {
   escalations     TicketEscalation[]
   statusHistory   TicketStatusHistory[]
 
+  @@index([contactId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([createdAt])
   @@map("support_tickets")
 }
 
@@ -1476,6 +1527,61 @@ enum ImportStatus {
 }
 
 // ─────────────────────────────────────────────
+// INTEGRATION SETTINGS (API keys stored in DB)
+// ─────────────────────────────────────────────
+
+model IntegrationSettings {
+  id String @id @default("singleton")
+
+  // Email (Resend)
+  resendApiKey    String? @db.Text
+  emailFromName   String?
+  emailFromDomain String?
+
+  // Twilio (WhatsApp & SMS)
+  twilioAccountSid     String?
+  twilioAuthToken      String? @db.Text
+  twilioWhatsappNumber String?
+  twilioSmsNumber      String?
+
+  // Facebook & Instagram
+  facebookAppId     String?
+  facebookAppSecret String? @db.Text
+
+  // Twitter / X
+  twitterClientId     String?
+  twitterClientSecret String? @db.Text
+
+  // LinkedIn
+  linkedinClientId     String?
+  linkedinClientSecret String? @db.Text
+
+  // TikTok
+  tiktokClientKey    String?
+  tiktokClientSecret String? @db.Text
+
+  // YouTube / Google
+  youtubeClientId     String?
+  youtubeClientSecret String? @db.Text
+
+  // Canva
+  canvaClientId     String?
+  canvaClientSecret String? @db.Text
+  canvaRedirectUri  String?
+
+  // Anthropic AI
+  anthropicApiKey String? @db.Text
+
+  // App
+  appUrl     String?
+  cronSecret String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("integration_settings")
+}
+
+// ─────────────────────────────────────────────
 // COMPANY SETTINGS
 // ─────────────────────────────────────────────
 
@@ -1535,6 +1641,10 @@ model Conversation {
   assignedToId  String?
   assignedTo    User?               @relation("ConversationAssignee", fields: [assignedToId], references: [id])
 
+  @@index([contactId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([createdAt])
   @@map("conversations")
 }
 
@@ -1550,6 +1660,8 @@ model ConversationMessage {
   sentById       String?
   sentBy         User?            @relation("MessageSender", fields: [sentById], references: [id])
 
+  @@index([conversationId])
+  @@index([sentAt])
   @@map("conversation_messages")
 }
 
@@ -1569,4 +1681,110 @@ enum MessageStatus {
   DELIVERED
   READ
   FAILED
+}
+
+// ─────────────────────────────────────────────
+// SOCIAL MEDIA MANAGEMENT
+// ─────────────────────────────────────────────
+
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  TWITTER
+  LINKEDIN
+  TIKTOK
+  YOUTUBE
+}
+
+enum SocialPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+  PARTIALLY_PUBLISHED
+}
+
+enum SocialMediaType {
+  TEXT
+  IMAGE
+  VIDEO
+  REEL
+  STORY
+  CAROUSEL
+}
+
+model SocialAccount {
+  id           String         @id @default(cuid())
+  platform     SocialPlatform
+  accountId    String
+  accountName  String
+  accountType  String?
+  avatarUrl    String?
+  accessToken  String         @db.Text
+  refreshToken String?        @db.Text
+  tokenExpiry  DateTime?
+  scopes       String[]
+  isActive     Boolean        @default(true)
+  metadata     Json?
+  createdById  String?
+  createdBy    User?          @relation("SocialAccountCreator", fields: [createdById], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  targets      SocialPostTarget[]
+
+  @@unique([platform, accountId])
+  @@index([createdById])
+  @@index([platform])
+  @@index([isActive])
+  @@map("social_accounts")
+}
+
+model SocialPost {
+  id            String           @id @default(cuid())
+  caption       String           @db.Text
+  mediaUrls     String[]
+  mediaType     SocialMediaType  @default(TEXT)
+  status        SocialPostStatus @default(DRAFT)
+  scheduledAt   DateTime?
+  publishedAt   DateTime?
+  firstComment  String?
+  tags          String[]
+  canvaDesignId String?
+  createdById   String?
+  createdBy     User?            @relation("SocialPostCreator", fields: [createdById], references: [id])
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  targets       SocialPostTarget[]
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdById])
+  @@index([createdAt])
+  @@map("social_posts")
+}
+
+model SocialPostTarget {
+  id             String           @id @default(cuid())
+  postId         String
+  post           SocialPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  accountId      String
+  account        SocialAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  status         SocialPostStatus @default(DRAFT)
+  platformPostId String?
+  platformUrl    String?
+  errorMessage   String?
+  publishedAt    DateTime?
+  likes          Int              @default(0)
+  comments       Int              @default(0)
+  shares         Int              @default(0)
+  reach          Int              @default(0)
+  impressions    Int              @default(0)
+  lastSyncAt     DateTime?
+
+  @@unique([postId, accountId])
+  @@index([postId])
+  @@index([accountId])
+  @@index([status])
+  @@map("social_post_targets")
 }

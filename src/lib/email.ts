@@ -1,26 +1,47 @@
 import { Resend } from "resend";
 import { db } from "@/lib/db";
+import { getIntegrationConfig } from "@/lib/config";
 
-// Lazy singleton — avoids "Missing API key" crash at module load time when key is not yet set
-let _resend: Resend | null = null;
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) return null;
-  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
-  return _resend;
+// Module-level cache — refreshed at most every 60 seconds
+let _emailCache: { resend: Resend | null; appUrl: string; fromAddress: string; expiry: number } | null = null
+
+async function getResend(): Promise<InstanceType<typeof Resend> | null> {
+  const rt = await getEmailRuntime()
+  APP_URL = rt.appUrl
+  FROM_ADDRESS = rt.fromAddress
+  return rt.resend
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN ?? "resend.dev";
-const FROM_ADDRESS = APP_DOMAIN === "resend.dev"
-  ? "onboarding@resend.dev"
-  : `noreply@${APP_DOMAIN}`;
+async function getEmailRuntime() {
+  const now = Date.now()
+  if (_emailCache && now < _emailCache.expiry) return _emailCache
+  const cfg = await getIntegrationConfig()
+  const domain = cfg.emailFromDomain
+  const fromAddress = domain === "resend.dev" ? "onboarding@resend.dev" : `noreply@${domain}`
+  _emailCache = {
+    resend: cfg.resendApiKey ? new Resend(cfg.resendApiKey) : null,
+    appUrl: cfg.appUrl,
+    fromAddress,
+    expiry: now + 60_000,
+  }
+  return _emailCache
+}
+
+// Keep APP_URL / FROM_ADDRESS as lazy refs used in template functions below
+let APP_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000"
+let FROM_ADDRESS = process.env.NEXT_PUBLIC_APP_DOMAIN
+  ? `noreply@${process.env.NEXT_PUBLIC_APP_DOMAIN}`
+  : "onboarding@resend.dev"
 
 async function getCompanyName(): Promise<string> {
   try {
-    const s = await db.companySettings.findUnique({ where: { id: "singleton" } });
-    return s?.companyName ?? process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Zeno Trip";
+    const [s, cfg] = await Promise.all([
+      db.companySettings.findUnique({ where: { id: "singleton" } }),
+      getIntegrationConfig(),
+    ]);
+    return s?.companyName ?? cfg.emailFromName ?? "Zeno Trip";
   } catch {
-    return process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Zeno Trip";
+    return "Zeno Trip";
   }
 }
 
@@ -95,14 +116,17 @@ export async function sendEmail(data: {
   from?: string;
   replyTo?: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const resend = getResend();
-  if (!resend) {
+  const rt = await getEmailRuntime()
+  // Update module-level refs so template functions stay in sync
+  APP_URL = rt.appUrl
+  FROM_ADDRESS = rt.fromAddress
+  if (!rt.resend) {
     console.log(`[email] No API key — would send to ${data.to}: ${data.subject}`);
     return { success: true };
   }
   try {
-    await resend.emails.send({
-      from: data.from ?? FROM_ADDRESS,
+    await rt.resend.emails.send({
+      from: data.from ?? rt.fromAddress,
       to: data.to,
       subject: data.subject,
       html: data.html,
@@ -130,11 +154,6 @@ export async function sendBookingConfirmation(data: {
   paidAmount: number;
   bookingId: string;
 }) {
-  if (!process.env.RESEND_API_KEY) {
-    console.log("[email] RESEND_API_KEY not set – skipping booking confirmation email");
-    return;
-  }
-
   const COMPANY_NAME = await getCompanyName();
   const portalUrl = `${APP_URL}/portal`;
   const bookingUrl = `${APP_URL}/portal/bookings/${data.bookingId}`;
@@ -193,7 +212,7 @@ export async function sendBookingConfirmation(data: {
     </div>
   `, `Booking Confirmation – ${data.bookingRef.slice(0, 8).toUpperCase()}`, COMPANY_NAME);
 
-  await getResend()!.emails.send({
+  await (await getResend())!.emails.send({
     from: FROM_ADDRESS,
     to: data.contactEmail,
     subject: `Your Booking Confirmation – ${data.bookingRef.slice(0, 8).toUpperCase()}`,
@@ -210,7 +229,7 @@ export async function sendPassportReminder(data: {
   travelDate: Date;
   passengersWithoutPassport: string[];
 }) {
-  if (!process.env.RESEND_API_KEY) return;
+  
 
   const COMPANY_NAME = await getCompanyName();
   const formatDate = (d: Date) =>
@@ -254,7 +273,7 @@ export async function sendPassportReminder(data: {
     </div>
   `, `Action Required: Passport Documents for Booking ${data.bookingRef.slice(0, 8).toUpperCase()}`, COMPANY_NAME);
 
-  await getResend()!.emails.send({
+  await (await getResend())!.emails.send({
     from: FROM_ADDRESS,
     to: data.contactEmail,
     subject: `Action Required: Passport Documents – ${data.bookingRef.slice(0, 8).toUpperCase()}`,
@@ -271,7 +290,7 @@ export async function sendVisaDeadlineAlert(data: {
   travelDate: Date;
   destinations: string[];
 }) {
-  if (!process.env.RESEND_API_KEY) return;
+  
 
   const COMPANY_NAME = await getCompanyName();
   const formatDate = (d: Date) =>
@@ -311,7 +330,7 @@ export async function sendVisaDeadlineAlert(data: {
     </div>
   `, `Visa Reminder – ${data.bookingRef.slice(0, 8).toUpperCase()}`, COMPANY_NAME);
 
-  await getResend()!.emails.send({
+  await (await getResend())!.emails.send({
     from: FROM_ADDRESS,
     to: data.contactEmail,
     subject: `Visa Reminder – ${data.bookingRef.slice(0, 8).toUpperCase()} – ${daysLeft} days to go`,
@@ -330,7 +349,7 @@ export async function sendPaymentFollowup(data: {
   travelDate: Date;
   bookingId: string;
 }) {
-  if (!process.env.RESEND_API_KEY) return;
+  
 
   const COMPANY_NAME = await getCompanyName();
   const formatDate = (d: Date) =>
@@ -373,7 +392,7 @@ export async function sendPaymentFollowup(data: {
     </div>
   `, `Payment Reminder – ${data.bookingRef.slice(0, 8).toUpperCase()}`, COMPANY_NAME);
 
-  await getResend()!.emails.send({
+  await (await getResend())!.emails.send({
     from: FROM_ADDRESS,
     to: data.contactEmail,
     subject: `Payment Reminder – ${data.bookingRef.slice(0, 8).toUpperCase()} – ${data.currency} ${data.balanceAmount.toLocaleString()} due`,
@@ -393,11 +412,6 @@ export async function sendItineraryShare(data: {
   totalCost: number;
   currency: string;
 }) {
-  if (!process.env.RESEND_API_KEY) {
-    console.log("[email] RESEND_API_KEY not set – skipping itinerary share email");
-    return;
-  }
-
   const COMPANY_NAME = await getCompanyName();
   const html = baseLayout(`
     <div class="header">
@@ -445,7 +459,7 @@ export async function sendItineraryShare(data: {
     </div>
   `, `Your Travel Itinerary is Ready – ${data.itineraryTitle}`, COMPANY_NAME);
 
-  await getResend()!.emails.send({
+  await (await getResend())!.emails.send({
     from: FROM_ADDRESS,
     to: data.contactEmail,
     subject: `Your Travel Itinerary is Ready – ${data.itineraryTitle}`,
@@ -463,11 +477,6 @@ export async function sendBookingStatusUpdate(data: {
   startDate: Date;
   bookingId: string;
 }) {
-  if (!process.env.RESEND_API_KEY) {
-    console.log("[email] RESEND_API_KEY not set – skipping booking status email");
-    return;
-  }
-
   const COMPANY_NAME = await getCompanyName();
   const bookingUrl = `${APP_URL}/portal/bookings/${data.bookingId}`;
   const statusLabel = data.status.replace(/_/g, " ");
@@ -524,7 +533,7 @@ export async function sendBookingStatusUpdate(data: {
     </div>
   `, `Booking ${data.bookingRef.slice(0, 8).toUpperCase()} – Status Updated to ${statusLabel}`, COMPANY_NAME);
 
-  await getResend()!.emails.send({
+  await (await getResend())!.emails.send({
     from: FROM_ADDRESS,
     to: data.contactEmail,
     subject: `Booking ${data.bookingRef.slice(0, 8).toUpperCase()} – Status Updated to ${statusLabel}`,
@@ -546,7 +555,7 @@ export async function sendCampaignEmail(data: {
   contactLastName?: string | null;
   unsubscribeToken?: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const resend = getResend();
+  const resend = await getResend();
   if (!resend) return { success: false, error: "Email not configured" };
 
   // Replace template variables

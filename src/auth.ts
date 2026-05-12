@@ -3,6 +3,12 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcryptjs from "bcryptjs";
 import { db } from "@/lib/db";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address").max(254),
+  password: z.string().min(1, "Password is required").max(128),
+});
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(db),
@@ -20,22 +26,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        // Validate input format before touching the database
+        const parsed = loginSchema.safeParse(credentials);
+        if (!parsed.success) return null;
+
+        const { email, password } = parsed.data;
 
         const user = await db.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: email.toLowerCase().trim() },
         });
 
         if (!user || !user.password) {
+          // Constant-time comparison to prevent email enumeration via timing
+          await bcryptjs.compare(password, "$2a$12$invalidhashpaddingtoconstanttime");
           return null;
         }
 
-        const isPasswordValid = await bcryptjs.compare(
-          credentials.password as string,
-          user.password
-        );
+        const isPasswordValid = await bcryptjs.compare(password, user.password);
 
         if (!isPasswordValid) {
           return null;

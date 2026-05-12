@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get("x-twilio-signature") ?? "";
   const url = `${req.nextUrl.origin}/api/webhooks/twilio`;
 
-  if (process.env.NODE_ENV === "production" && !validateTwilioSignature(url, params, signature)) {
+  if (process.env.NODE_ENV === "production" && !(await validateTwilioSignature(url, params, signature))) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 

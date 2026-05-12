@@ -2,11 +2,13 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import Link from "next/link";
-import { User, Users, TrendingUp, Shield, Building2, Info } from "lucide-react";
+import { User, Users, TrendingUp, Shield, Building2, Info, Plug } from "lucide-react";
 import { ProfileForm, ChangePasswordForm, InviteMemberDialog } from "@/components/settings/profile-form";
 import { CompanySettingsForm } from "@/components/settings/company-settings-form";
 import { PipelineEditor } from "@/components/settings/pipeline-editor";
+import { IntegrationsForm } from "@/components/settings/integrations-form";
 import { getCompanySettings } from "@/lib/actions/settings";
+import { getIntegrationSettings } from "@/lib/actions/integrations";
 
 interface SettingsPageProps {
   searchParams: Promise<{ tab?: string }>;
@@ -19,7 +21,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const params = await searchParams;
   const tab = params.tab ?? "company";
 
-  const [currentUser, teamMembers, pipelines, companySettings] = await Promise.all([
+  const [currentUser, teamMembers, pipelines, companySettings, integrationSettings] = await Promise.all([
     db.user.findUnique({ where: { id: session.user.id } }),
     db.user.findMany({ where: { isActive: true }, orderBy: { createdAt: "asc" } }),
     db.pipeline.findMany({
@@ -27,6 +29,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       orderBy: { createdAt: "asc" },
     }),
     getCompanySettings(),
+    getIntegrationSettings(),
   ]);
 
   const tabs = [
@@ -34,6 +37,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
     { id: "profile", label: "My Profile", icon: User },
     { id: "team", label: "Team", icon: Users },
     { id: "pipeline", label: "Pipeline", icon: TrendingUp },
+    { id: "integrations", label: "Integrations", icon: Plug },
     { id: "about", label: "About", icon: Info, href: "/settings/about" },
   ];
 
@@ -144,6 +148,10 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
           {tab === "pipeline" && (
             <PipelineEditor initialPipelines={pipelines} />
+          )}
+
+          {tab === "integrations" && (
+            <IntegrationsForm settings={integrationSettings} />
           )}
         </div>
       </div>

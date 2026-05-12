@@ -1,3 +1,4 @@
+
 # Travel CRM — Outstanding Fixes & Features
 
 > Resume prompt: "Read FIXES.md and continue implementing the pending items in order."
@@ -136,6 +137,34 @@
 3. **#1 Campaign Sending + #6 Campaign Detail** — do together (detail page hosts Send button)
 4. **#2 Automations** — hook triggers into existing actions
 5. **#3 Sequence Enrollment** — needs cron job + UI additions
+
+---
+
+## 7. Social Media Management Module  [x]
+
+**What was built:**
+- `SocialAccount`, `SocialPost`, `SocialPostTarget` Prisma models + enums
+- `src/lib/social.ts` — OAuth flows + post publishers for Facebook, Instagram, Twitter, LinkedIn, TikTok, YouTube
+- `src/lib/social-constants.ts` — client-safe `PLATFORM_CONFIGS` (split to avoid server-only imports in client components)
+- `src/app/api/social/connect/[platform]/route.ts` — dynamic OAuth connect initiation
+- `src/app/api/social/callback/[platform]/route.ts` — dynamic OAuth callback handler
+- `src/lib/actions/social.ts` — server actions (accounts, posts, publish, stats)
+- `src/lib/jobs/social-posts.ts` — scheduled post processor (runs via cron)
+- Social pages: `/social`, `/social/accounts`, `/social/compose`, `/social/scheduled`, `/social/analytics`
+- Components: `PlatformIcon`, `PostComposer`, `AccountCard`, `PostCard`, `PublishNowButton`, `DeletePostButton`
+
+---
+
+## 8. Settings → Integrations (DB-stored API keys)  [x]
+
+**What was built:**
+- `IntegrationSettings` Prisma model (singleton) storing all API keys in DB
+- `src/lib/config.ts` — `getIntegrationConfig()`: DB-first config loader with env-var fallback
+- Updated `src/lib/email.ts`, `src/lib/twilio.ts`, `src/lib/canva.ts`, `src/lib/social.ts` to use `getIntegrationConfig()`
+- `src/lib/actions/integrations.ts` — `getIntegrationSettings()` + `saveIntegrationSettings()` server actions
+- `src/components/settings/integrations-form.tsx` — full UI with collapsible sections per integration, secret masking, status badges
+- Added "Integrations" tab to `src/app/(crm)/settings/page.tsx`
+- Fixed async `validateTwilioSignature` in webhook handler
 
 ---
 

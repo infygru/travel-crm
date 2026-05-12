@@ -1,9 +1,19 @@
+import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { CurrencyProvider } from "@/components/currency-provider";
 import { getCompanySettings } from "@/lib/actions/settings";
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | Travel CRM",
+    default: "Travel CRM",
+  },
+  description: "Enterprise travel CRM — manage bookings, contacts, deals, and marketing in one place.",
+  robots: { index: false, follow: false },
+};
 
 export default async function CrmLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
